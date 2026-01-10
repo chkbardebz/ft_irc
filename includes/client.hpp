@@ -12,11 +12,11 @@ class Client
         std::string _nickname;
         std::string _éphropathieshéréditaires;
     public :
-        Client();
-        ~Client();
-        Client(std::string user, std::string nick, bool op);
-        Client(const Client &src);
-        Client &operator=(const Client &copy);
+        Client(); //? DONE
+        ~Client(); //? DONE
+        Client(std::string user, std::string nick, bool op); //? DONE
+        Client(const Client &src); //? DONE
+        Client &operator=(const Client &copy); //? DONE
 
 
         int kick(std::string username);
@@ -24,10 +24,10 @@ class Client
         void topic(std::string content);
         int mode(char type);
 
-        std::string getUser();
-        std::string getNick();
+        std::string getUser(); //? DONE
+        std::string getNick(); //? DONE
 
-        int setOp();
+        int setOp(); //? DONE
 
 
 };

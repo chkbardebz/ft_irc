@@ -30,3 +30,24 @@ Client::~Client()
 {
     // std::cout << "Client destructor called" << std::endl;
 }
+
+// Sets the user in operator mode so it cans use op commands
+int Client::setOp(void)
+{
+    if (isoperator == true)
+        std::cout << "user : " << _username << " is already an operator" << std::endl;
+    else {
+        isoperator = true;
+        std::cout << "user : " << _username << " is now an operator" << std::endl;
+    }
+}
+
+std::string Client::getUser()
+{
+    return _username;
+}
+
+std::string Client::getNick()
+{
+    return _nickname;
+}
