@@ -7,7 +7,11 @@
 # include <netdb.h>
 # include <arpa/inet.h>
 # include <cstring>
+# include <unistd.h>
+# include <poll.h>
 		
+
+#define MAX_CLIENTS 10
 
 
 #endif

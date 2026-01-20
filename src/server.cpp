@@ -21,6 +21,8 @@ void print_ip(const struct addrinfo *ai)
 
 int main(int ac, char **av)
 {
+    // int client_fd[10];
+
     struct addrinfo hints, *res;
 
     std::memset(&hints, 0, sizeof(hints));
@@ -30,25 +32,75 @@ int main(int ac, char **av)
 
     getaddrinfo(NULL, "6667", &hints, &res);
 
-    int sockfd = socket(res->ai_family,
+    int servfd = socket(res->ai_family,
                         res->ai_socktype,
                         res->ai_protocol);
 
-    bind(sockfd, res->ai_addr, res->ai_addrlen);
-
+    bind(servfd, res->ai_addr, res->ai_addrlen);
     print_ip(res);
+    listen(servfd, 10);
+
+    struct pollfd fds[MAX_CLIENTS + 1];
+
+    fds[0].fd = servfd;
+    fds[0].events = POLLIN;
+
+    for (int i = 1; i <= MAX_CLIENTS; i++)
+        fds[i].fd = -1;
 
 
-    while (1)
+    // char buffer[1024];
+
+    while(1)
     {
-        listen(sockfd, 10);
+        poll(fds, MAX_CLIENTS + 1, -1);
+
+        if (fds[0].revents & POLLIN)
+        {
+            int clientfd = accept(servfd, NULL, NULL);
+            for (int i = 1; i <= MAX_CLIENTS; i++)
+            {
+                if (fds[i].fd == -1)
+                {
+                    fds[i].fd = clientfd;
+                    fds[i].events = POLLIN;
+                    break;
+                }
+            }
+        }
+        for (int i = 1; i <= MAX_CLIENTS; i++)
+        {
+            if (fds[i].fd != -1 && (fds[i].revents & POLLIN))
+            {
+                char buf[1024];
+                ssize_t n = recv(fds[i].fd, buf, sizeof(buf), 0);
+
+                if (n <= 0)
+                {
+                    close(fds[i].fd);
+                    fds[i].fd = -1;
+                }
+                else
+                {
+                    for (int i = 1; i <= MAX_CLIENTS; i++)
+                        send(fds[i].fd, buf, n, 0);
+                }
+            }
+        }
     }
-
     freeaddrinfo(res);
-
-
 }
 
+
+//   for (int i = 0; i<2; i++)
+//         {
+//             ssize_t bytes = recv(client_fd[i], buffer, sizeof(buffer) - 1, 0);
+//             if (bytes <= 0)
+//                 break;
+//             buffer[bytes] = '\0';
+//             printf("Client: %s\n", buffer);
+//             send(client_fd[i], buffer, bytes, 0);
+//         }
 
 // int main(int ac, char **av)
 // {
