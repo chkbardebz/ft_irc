@@ -7,10 +7,10 @@
 class Client
 {
     private :
-        bool isoperator;
         std::string _username;
         std::string _nickname;
-        std::string _éphropathieshéréditaires;
+        bool _isoperator;
+        // std::string _éphropathieshéréditaires;
     public :
         Client(); //? DONE
         ~Client(); //? DONE
@@ -27,7 +27,10 @@ class Client
         std::string getUser(); //? DONE
         std::string getNick(); //? DONE
 
-        int setOp(); //? DONE
+        void setUser(std::string user); //? DONE
+        void setNick(std::string nick); //? DONE
+
+        void setOp(); //? DONE
 
 
 };

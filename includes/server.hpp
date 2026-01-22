@@ -9,6 +9,9 @@
 # include <cstring>
 # include <unistd.h>
 # include <poll.h>
+
+# include <stdio.h>
+# include <stdlib.h> 
 		
 
 #define MAX_CLIENTS 10

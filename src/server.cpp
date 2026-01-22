@@ -1,5 +1,5 @@
 #include "../includes/server.hpp"
-
+#include "../includes/client.hpp"
 
 void print_ip(const struct addrinfo *ai)
 {
@@ -19,8 +19,44 @@ void print_ip(const struct addrinfo *ai)
     }
 }
 
+bool check_duplicate(Client *allclients, char *buf)
+{
+    for (int i = 0; i < MAX_CLIENTS; i++)
+    {
+        if (strcmp(allclients[i].getUser().c_str(), buf) == 0)
+            return (false);
+    }
+    return (true);
+}
+
+//! & ou pas ??
+bool check_set_valid_user(Client *allclients, pollfd *fds, int newfd, int i_new_client)
+{
+    (void)fds;
+    char buf[1024];
+    bool status = false;
+
+    while (status == false)
+    {
+        write(newfd, "QUEL EST TON NOM\n> ", 20);
+        ssize_t n = recv(newfd, buf, sizeof(buf), 0);
+        if (n <= 0)
+            return (false);
+        buf[n - 1] = '\0';  // Enlever le \n de netcat
+        
+        if (check_duplicate(allclients, buf) == true)  // ← Vérifier que c'est unique
+            status = true;
+        else
+            write(newfd, "Username already taken!\n", 25);
+    }
+    allclients[i_new_client].setUser(std::string(buf));
+    return (true);
+}
+
 int main(int ac, char **av)
 {
+    (void)ac;
+    (void)av;
     // int client_fd[10];
 
     struct addrinfo hints, *res;
@@ -41,6 +77,12 @@ int main(int ac, char **av)
     listen(servfd, 10);
 
     struct pollfd fds[MAX_CLIENTS + 1];
+    Client allclients[MAX_CLIENTS];
+
+//! #include <list>
+//! std::list<Client> allclients;
+
+
 
     fds[0].fd = servfd;
     fds[0].events = POLLIN;
@@ -55,33 +97,43 @@ int main(int ac, char **av)
     {
         poll(fds, MAX_CLIENTS + 1, -1);
 
-        if (fds[0].revents & POLLIN)
+        if (fds[0].revents & POLLIN) //? ACCEPTE LES CONNEXIONS ENTRANTES //? fds[0] ==> monitor 
         {
             int clientfd = accept(servfd, NULL, NULL);
             for (int i = 1; i <= MAX_CLIENTS; i++)
             {
                 if (fds[i].fd == -1)
                 {
+                    if (check_set_valid_user(allclients, fds, clientfd, i - 1) == false)
+                    {
+                        printf("Connexion refusée\n");
+                        close(clientfd);
+                        break;
+                        //! prevoir vrai sortie //! signaux si ctrl C dans user choice
+                    }
+                    
                     fds[i].fd = clientfd;
                     fds[i].events = POLLIN;
+                    printf("username : %s\n", allclients[i - 1].getUser().c_str());
                     break;
                 }
             }
         }
-        for (int i = 1; i <= MAX_CLIENTS; i++)
+        for (int i = 1; i <= MAX_CLIENTS; i++) //? RECOIT LES MESSAGES ET LES REDISTRIBUE PARMIS TOUS LES CLIENTS
         {
             if (fds[i].fd != -1 && (fds[i].revents & POLLIN))
             {
                 char buf[1024];
                 ssize_t n = recv(fds[i].fd, buf, sizeof(buf), 0);
 
-                if (n <= 0)
+                if (n <= 0) //? FERME LE FD CORRESPONDANT AU CLIENT QUI SE DECONNECTE
                 {
-                    close(fds[i].fd);
-                    fds[i].fd = -1;
+                    close(fds[i].fd); 
+                    fds[i].fd = -1; //? Reset le fd au status "inutilise"
                 }
                 else
                 {
+                    
                     for (int i = 1; i <= MAX_CLIENTS; i++)
                         send(fds[i].fd, buf, n, 0);
                 }
@@ -90,6 +142,28 @@ int main(int ac, char **av)
     }
     freeaddrinfo(res);
 }
+
+//todo 
+// - comparer comportement USER avec autre irc classique ==> RFC 2812 ??? ...
+// - ... finir set_user() 
+// - implementer list // Client  
+// - code modulaire ==> remettre au propre ==> channel ?? 
+// - les COMMANDES 
+
+// - bonus / envoi de fichiers
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //   for (int i = 0; i<2; i++)

@@ -1,11 +1,11 @@
-#include "client.hpp"
+#include "../includes/client.hpp"
 
-Client::Client() : _username("default"), _nickname("dft"), isoperator(false)
+Client::Client() : _username("default"), _nickname("dft"), _isoperator(false)
 {
     // std::cout << "Client created" << std::endl;
 }
 
-Client::Client(std::string user, std::string nick, bool op) : _username(user), _nickname(nick), isoperator(op)
+Client::Client(std::string user, std::string nick, bool op) : _username(user), _nickname(nick), _isoperator(op)
 {
     // std::cout << nick << " Client created" << std::endl;
 }
@@ -21,7 +21,7 @@ Client &Client::operator=(const Client &copy)
     {
         this->_username = copy._username;
         this->_nickname = copy._nickname;
-        this->isoperator = copy.isoperator;
+        this->_isoperator = copy._isoperator;
     }
     return (*this);
 }
@@ -32,12 +32,12 @@ Client::~Client()
 }
 
 // Sets the user in operator mode so it cans use op commands
-int Client::setOp(void)
+void Client::setOp(void)
 {
-    if (isoperator == true)
+    if (_isoperator == true)
         std::cout << "user : " << _username << " is already an operator" << std::endl;
     else {
-        isoperator = true;
+        _isoperator = true;
         std::cout << "user : " << _username << " is now an operator" << std::endl;
     }
 }
@@ -50,4 +50,13 @@ std::string Client::getUser()
 std::string Client::getNick()
 {
     return _nickname;
+}
+
+void Client::setUser(std::string user)
+{
+    _username = user;
+}
+void Client::setNick( std::string nick)
+{
+    _nickname = nick;
 }
