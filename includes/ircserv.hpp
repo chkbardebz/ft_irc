@@ -10,11 +10,18 @@
 # include <unistd.h>
 # include <poll.h>
 
-# include <stdio.h>
-# include <stdlib.h> 
-		
+# include <stdio.h> //!
+# include <stdlib.h> //!
+
+# include <map>
+# include "client.hpp"
 
 #define MAX_CLIENTS 10
 
+struct Server 
+{
+    struct addrinfo hints;
+    struct addrinfo *res;
+};
 
 #endif

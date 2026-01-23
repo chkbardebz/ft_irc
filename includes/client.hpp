@@ -4,11 +4,12 @@
 # include <iostream>
 # include <string>
 
+
 class Client
 {
     private :
-        std::string _username;
         std::string _nickname;
+        std::string _username;
         bool _isoperator;
         // std::string _éphropathieshéréditaires;
     public :
@@ -29,7 +30,6 @@ class Client
 
         void setUser(std::string user); //? DONE
         void setNick(std::string nick); //? DONE
-
         void setOp(); //? DONE
 
 
