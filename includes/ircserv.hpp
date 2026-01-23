@@ -16,7 +16,9 @@
 # include <map>
 # include "client.hpp"
 
-#define MAX_CLIENTS 10
+#include <sstream> //parsing
+
+#define MAX_CLIENTS 42
 
 struct Server 
 {

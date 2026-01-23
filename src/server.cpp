@@ -20,46 +20,6 @@ void print_ip(const struct addrinfo *ai)
 }
 
 
-
-
-
-
-
-
-bool nick_check_duplicate(std::map<int, Client>& huntrill, char *buf)
-{
-    for (std::map<int, Client>::iterator it = huntrill.begin() ; it != huntrill.end() ; it++)
-    {
-        std::cout << it->second.getUser() << std::endl;
-        if ((std::strcmp(it->second.getUser().c_str(), buf)) == 0)
-            return(false);
-    }
-    return(true);
-}
-
-bool nick_set(std::map<int, Client>& huntrill, int newfd)
-{
-    char buf_nick[1024];
-    bool status = false;
-
-    while (status == false)
-    {
-        write(newfd, "What's your nickname\n> ", 20);
-        ssize_t n = recv(newfd, buf_nick, sizeof(buf_nick), 0);
-        if (n <= 0)
-            return (false);
-        buf_nick[n] = '\0';
-        
-        if (nick_check_duplicate(huntrill, buf_nick) == true)
-            status = true;
-        else
-            write(newfd, "Username already taken!\n", 25);
-    }
-    Client newclient(buf_nick, "TMP", false);
-    huntrill.insert(std::make_pair(newfd, newclient));
-    return (true);
-}
-
 int setSocketServer(Server &serverDetails)
 {
     std::memset(&serverDetails.hints, 0, sizeof(serverDetails.hints));
@@ -67,16 +27,159 @@ int setSocketServer(Server &serverDetails)
     serverDetails.hints.ai_socktype = SOCK_STREAM;
     serverDetails.hints.ai_flags = AI_PASSIVE; // IMPORTANT
     getaddrinfo(NULL, "6667", &serverDetails.hints, &serverDetails.res);
-    return (socket(serverDetails.res->ai_family, serverDetails.res->ai_socktype, serverDetails.res->ai_protocol));
+    int servsocket = socket(serverDetails.res->ai_family, serverDetails.res->ai_socktype, serverDetails.res->ai_protocol);
+    int opt = 1;
+    if (setsockopt(servsocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) //? pour eviter le cooldown de con
+    {
+        perror("setsockopt SO_REUSEADDR");
+        exit(EXIT_FAILURE);
+    }
+    return (servsocket);
 }
 
 void setFds(struct pollfd *fds, int servfd)
 {
     fds[0].fd = servfd;
     fds[0].events = POLLIN;
-
     for (int i = 1; i <= MAX_CLIENTS; i++)
         fds[i].fd = -1;
+}
+
+bool isValidChar( const std::string str, int i )
+{
+    for (; str[i] ; i++)
+    {
+        if (std::isalpha(str[i]) == false && std::isdigit(str[i]) == false)
+            return (false);
+    }
+    return (true);
+}
+
+bool nick_check_duplicate(std::map<int, Client>& huntrill, std::string nickname)
+{
+    for (std::map<int, Client>::iterator it = huntrill.begin() ; it != huntrill.end() ; it++)
+    {
+        if ((std::strcmp(it->second.getNick().c_str(), nickname.c_str())) == 0)
+            return(false);
+    }
+    return(true);
+}
+
+// std::string cmd, nickname; tres tres utile pour command avec plusieurs args comme PRIVMSG / CHANNEL... etc
+// nick peut se renommer pas user
+bool nick_set(std::map<int, Client> &huntrill, int client_fd, char* line)
+{
+    std::stringstream ss(line);
+    std::string cmd, nickname, more;
+
+    ss >> cmd >> nickname >> more;
+    if (nickname.empty()) //? err: pas de nickname fourni
+    {
+        write(client_fd, "No nickname.\n", 14);
+        return (false);
+    }
+    if (!more.empty()) //? err: pas de nickname fourni
+    {
+        write(client_fd, "t'as cru quoi r n'a change la ptn dta mere.\n", 45);
+        return (false);
+    }
+    if (nick_check_duplicate(huntrill, nickname) == false) // err: nickname deja existant 
+    {
+        write(client_fd, "Username already taken.\n", 25);
+        return (false);
+    }
+    if (std::isdigit(nickname[0])) // err: first elem isdigit
+    {
+        write(client_fd, "met une lettre au debut sale con.\n", 35);
+        return (false);
+    }
+    if (!isValidChar(nickname, 1))
+    {
+        write(client_fd, "Only char\n", 11);
+        return (false);
+    }
+    if (nickname.size() > 9)
+    {
+        write(client_fd, "max 9 letters\n", 15);
+        return (false);
+    }
+
+    std::map<int, Client>::iterator it = huntrill.find(client_fd);
+    if (it != huntrill.end())  // Vérifier que le client existe
+        it->second.setNick(nickname);
+    // std::cout << "STATUS: " << std::endl;
+    // std::cout << "client/fd: " << it->first << std::endl;
+    // std::cout << "nick: " << it->second.getNick() << std::endl;
+    // std::cout << "user: " << it->second.getUser() << std::endl;
+    return (true);
+}
+
+void acceptNewConnexion(std::map<int, Client>& huntrill, struct pollfd *fds, int servfd)
+{
+    int i = 1;
+    if (fds[0].revents & POLLIN) //? ACCEPTE LES CONNEXIONS ENTRANTES //? fds[0] ==> monitor 
+    {
+        int new_client_fd = accept(servfd, NULL, NULL);
+        while (i <= MAX_CLIENTS)
+        {
+            if (fds[i].fd == -1)
+            {
+                fds[i].fd = new_client_fd;
+                fds[i].events = POLLIN;
+                Client new_client_class; //? default constructor
+                huntrill.insert(std::make_pair(new_client_fd, new_client_class));
+                break;
+            }
+            i++;
+        }
+        if (i == MAX_CLIENTS)
+        {
+            write(new_client_fd, "Err: no no noooooo\n", 20);
+            close(new_client_fd); 
+        }
+    }
+}
+
+bool Error(std::map<int, Client> &huntrill, int client_fd, char* line)
+{
+    (void)huntrill;
+    (void)client_fd;
+    (void)line;
+    std::cout << "vaffanculo\n";
+    return (true);
+}
+
+void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds)
+{
+    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line) = {&nick_set, &Error};
+    std::string cmd_names[] = {"NICK","ERROR"};
+
+    for (int i = 1; i <= MAX_CLIENTS; i++) //? RECOIT LES MESSAGES ET LES REDISTRIBUE PARMIS TOUS LES CLIENTS
+    {
+        if (fds[i].fd != -1 && (fds[i].revents & POLLIN))
+        {
+            char line_buf[1024];
+            ssize_t n = recv(fds[i].fd, line_buf, sizeof(line_buf), 0);
+            line_buf[n] = '\0';
+
+            std::stringstream ss(line_buf);
+            std::string cmd;
+
+            ss >> cmd;
+
+            if (n <= 0) //? FERME LE FD CORRESPONDANT AU CLIENT QUI SE DECONNECTE
+            {
+                close(fds[i].fd); 
+                fds[i].fd = -1; //? Reset le fd au status "inutilise"
+                huntrill.erase(fds[i].fd);
+            }
+            for (size_t j = 0; j < 2 ; j++)
+            {
+                if (std::strcmp(cmd.c_str(), cmd_names[j].c_str()) == 0)
+                    funcs[j](huntrill, fds[i].fd, line_buf); //je n'appel pas un ptr sur "fn libre" mais sur des methodes membres de la classe intern d'ou l'utilisation de this->
+            }
+        }
+    }
 }
 
 int main(int ac, char **av)
@@ -89,69 +192,35 @@ int main(int ac, char **av)
     bind(servfd, serverDetails.res->ai_addr, serverDetails.res->ai_addrlen);
     print_ip(serverDetails.res);
     listen(servfd, 10);
-
     struct pollfd fds[MAX_CLIENTS + 1];
     setFds(fds, servfd);
 
     std::map<int, Client> huntrill;
 
-
     while(1)
     {
         poll(fds, MAX_CLIENTS + 1, -1);
-
-        if (fds[0].revents & POLLIN) //? ACCEPTE LES CONNEXIONS ENTRANTES //? fds[0] ==> monitor 
-        {
-            int clientfd = accept(servfd, NULL, NULL);
-            for (int i = 1; i <= MAX_CLIENTS; i++)
-            {
-                if (fds[i].fd == -1)
-                {
-                    if (nick_set(huntrill, clientfd) == false)
-                    {
-                        fprintf(0, "Connexion refusée\n");
-                        close(clientfd);
-                        break;
-                        //! prevoir vrai sortie //! signaux si ctrl C dans user choice
-                    }
-                    
-                    fds[i].fd = clientfd;
-                    fds[i].events = POLLIN;
-                    break;
-                }
-            }
-        }
-        for (int i = 1; i <= MAX_CLIENTS; i++) //? RECOIT LES MESSAGES ET LES REDISTRIBUE PARMIS TOUS LES CLIENTS
-        {
-            if (fds[i].fd != -1 && (fds[i].revents & POLLIN))
-            {
-                char buf[1024];
-                ssize_t n = recv(fds[i].fd, buf, sizeof(buf), 0);
-
-                if (n <= 0) //? FERME LE FD CORRESPONDANT AU CLIENT QUI SE DECONNECTE
-                {
-                    close(fds[i].fd); 
-                    fds[i].fd = -1; //? Reset le fd au status "inutilise"
-                }
-                else
-                {
-                    
-                    for (int j = 1; j <= MAX_CLIENTS; j++)
-                        if (j != i)
-                            send(fds[j].fd, buf, n, 0);
-                }
-            }
-        }
+        acceptNewConnexion(huntrill, fds, servfd);
+        AcceptNewCommand(huntrill, fds);
     }
     freeaddrinfo(serverDetails.res);
 }
 
+// todo 
+// - des qu'on arrive brianstorming : toi tu me rara tout et moi j'explique mon bebe + ca me fait revise
+
+
 //todo 
-// - comparer comportement USER avec autre irc classique ==> RFC 2812 ??? ...
-// - ... finir set_user() 
+//? - comparer comportement USER avec autre irc classique ==> RFC 2812 ??? ...
+//? - ... finir nick_set() 
 //? - implementer list // Client  
-// - code modulaire ==> remettre au propre ==> channel ?? 
+//? - code modulaire ==> remettre au propre ==> channel ?? 
+//? - prevoir si un client veut se connecter mais plus de place
 // - les COMMANDES 
+
+
+
+// - fonction quit + signaux + mettre des try si necessaire pour eviter des possibles bad_alloc et autre
 
 // - bonus / envoi de fichiers
 
@@ -191,7 +260,6 @@ int main(int ac, char **av)
 //     return (true);
 // }
 
-// //! & ou pas ??
 // bool check_set_valid_user(Client *allclients, pollfd *fds, int newfd, int i_new_client)
 // {
 //     (void)fds;
@@ -269,7 +337,6 @@ int main(int ac, char **av)
 //                         printf("Connexion refusée\n");
 //                         close(clientfd);
 //                         break;
-//                         //! prevoir vrai sortie //! signaux si ctrl C dans user choice
 //                     }
                     
 //                     fds[i].fd = clientfd;
@@ -340,7 +407,7 @@ int main(int ac, char **av)
 
 //     getsockname(sockfd, (struct sockaddr *)&local, &len);
 
-//     local.sin_port = 6667; //! mettre av2
+//     local.sin_port = 6667; 
 
 //     std::cout << inet_ntoa(local.sin_addr) << local.sin_port << std::endl;
 

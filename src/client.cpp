@@ -1,11 +1,11 @@
 #include "../includes/client.hpp"
 
-Client::Client() : _username("default"), _nickname("dft"), _isoperator(false)
+Client::Client() : _nickname("default_nickname"), _username("default_username"), _isoperator(false)
 {
     // std::cout << "Client created" << std::endl;
 }
 
-Client::Client(std::string user, std::string nick, bool op) : _username(user), _nickname(nick), _isoperator(op)
+Client::Client(std::string user, std::string nick, bool op) : _nickname(user), _username(nick), _isoperator(op)
 {
     // std::cout << nick << " Client created" << std::endl;
 }

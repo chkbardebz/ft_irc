@@ -15,7 +15,7 @@ class Client
     public :
         Client(); //? DONE
         ~Client(); //? DONE
-        Client(std::string user, std::string nick, bool op); //? DONE
+        Client(std::string nick, std::string user, bool op); //? DONE
         Client(const Client &src); //? DONE
         Client &operator=(const Client &copy); //? DONE
 
