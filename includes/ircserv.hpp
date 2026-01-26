@@ -26,4 +26,6 @@ struct Server
     struct addrinfo *res;
 };
 
+bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line);
+
 #endif
