@@ -139,10 +139,52 @@ bool Error(std::map<int, Client> &huntrill, int client_fd, char* line)
     return (true);
 }
 
+
+bool fullisspace(std::string str, int i)
+{
+    for(; str[i]; i++)
+    {
+        if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n' && str[i] != '\r')
+            return (false);
+    }
+    return (true);
+}
+
+
+bool user_set(std::map<int, Client> &huntrill, int client_fd, char* line)
+{
+    std::map<int, Client>::iterator it = huntrill.find(client_fd); //! pas de verif si it == huntrill.end() ?
+    if (it->second.getUser() != NO_USERNAME)
+    {
+        write(client_fd, "462 ERR_ALREADYREGISTRED USER\n", 31);
+        return (false);
+    }
+    std::stringstream ss(line);
+    std::string cmd, username, hostname, servname, realname;
+    if (!(ss >> cmd >> username >> hostname >> servname))
+    {
+        write(client_fd, "461 ERR_NEEDMOREPARAMS USER\n", 29);
+        return (false);
+    }
+    getline(ss, realname);
+    while (realname[0] && isspace(realname[0]))
+        realname.erase(0, 1);
+    if (realname.empty() || realname[0] != ':' || fullisspace(realname, 2) == true)
+    {
+        write(client_fd, "461 ERR_NEEDMOREPARAMS USER\n", 29);
+        return (false);
+    }
+    realname.erase(0, 1); //? supp le ':'
+    it->second.setUser(username);
+    it->second.setReal(realname);
+    return (true);
+}
+
+
 void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds)
 {
-    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line) = {&nick_set, &Error};
-    std::string cmd_names[] = {"NICK","ERROR"};
+    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line) = {&nick_set, &user_set, &Error};
+    std::string cmd_names[] = {"NICK", "USER", "ERROR"};
 
     for (int i = 1; i <= MAX_CLIENTS; i++) //? RECOIT LES MESSAGES ET LES REDISTRIBUE PARMIS TOUS LES CLIENTS
     {
@@ -157,12 +199,13 @@ void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds)
 
             ss >> cmd;
             if (n <= 0) //? FERME LE FD CORRESPONDANT AU CLIENT QUI SE DECONNECTE 
-            { //! a mettre dans la fonction quit propre a faire
+            { 
+                //! a mettre dans la fonction quit propre a faire
                 huntrill.erase(fds[i].fd);
                 close(fds[i].fd); 
                 fds[i].fd = -1; //? Reset le fd au status "inutilise"
             }
-            for (size_t j = 0; j < 2 ; j++)
+            for (size_t j = 0; j < 3 ; j++)
             {
                 if (std::strcmp(cmd.c_str(), cmd_names[j].c_str()) == 0)
                     funcs[j](huntrill, fds[i].fd, line_buf); //je n'appel pas un ptr sur "fn libre" mais sur des methodes membres de la classe intern d'ou l'utilisation de this->
@@ -236,8 +279,57 @@ int main(int ac, char **av)
 
 
 
+// bool user_set(std::map<int, Client> &huntrill, int client_fd, char* line)
+// {
+//     write(client_fd, "queeeeeeeeeeeeeeeeeetteeeeeeeeeee\n", 35); //!
+
+//     std::map<int, Client>::iterator it = huntrill.find(client_fd);
+//     // if (it == huntrill.end()) //! theoriquement Client ne peux pas rentrer en etant pas initialiser #impossibletkt
+//     // {
+//     //     write(client_fd, "jtema ton posterieur jveux le meme en po-po-ster (hmmm ouais)\n", 62);
+//     //     return (false); 
+//     // }
+//     // if (std::strcmp(it->second.getUser().c_str(), NO_USERNAME)) //? Vérifier que le client n'a pa deja rentre son username
+//     if (it->second.getUser() != NO_USERNAME)
+//     {
+//         write(client_fd, "462 ERR_ALREADYREGISTRED USER\n", 31);
+//         return (false);
+//     }
+
+//     std::stringstream ss(line);
+//     std::string cmd, username, hostname, servname, realname;
+//     if (!(ss >> cmd >> username >> hostname >> servname)) //? Si un parametre est manquant 
+//     {
+//         write(client_fd, "461 ERR_NEEDMOREPARAMS USER\n", 29);
+//         return (false);
+//     }
+//     // if (std::strcmp(hostname.c_str(), "0") || std::strcmp(servname.c_str(), "*")) //? NE RENVOI PAS DE MSG D'ERREURS POUR CE CAS
+//     // {
+//     //     write(client_fd, "gougougaga mauvai\n", 21);
+//     //     return (false);
+//     // }
+//     getline(ss, realname);
+//     if (realname.empty() || realname[1] != ':') //? Si realname est manquant OU si ':' est absent 
+//     {
+//         write(client_fd, "461 ERR_NEEDMOREPARAMS USER\n", 29);
+//         return (false);
+//     }
+//     realname.erase(0, 2); //? supp l'espace initial
+//     // std::cout << "REALNAME=" << realname << std::endl;
+//     // write(0, realname.c_str(), strlen(realname.c_str()));
 
 
+
+//     it = huntrill.find(client_fd); //! Normalement ne tombe jamais dans ce cas erreur, comment verifier si client existe ?? 
+//     it->second.setUser(username);
+//     it->second.setReal(realname);
+
+//     // std::cout << "STATUS: " << std::endl;
+//     // std::cout << "client/fd: " << it->first << std::endl;
+//     // std::cout << "nick: " << it->second.getNick() << std::endl;
+//     // std::cout << "user: " << it->second.getUser() << std::endl;
+//     return (true);
+// }
 
 //? Before container map
 // bool check_duplicate(Client *allclients, char *buf)

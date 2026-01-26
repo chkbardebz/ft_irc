@@ -4,33 +4,33 @@
 # include <iostream>
 # include <string>
 
+# define NO_NICKNAME "no_nickname"
+# define NO_USERNAME "no_username"
+# define NO_REALNAME "no_realname"
 
 class Client
 {
     private :
         std::string _nickname;
         std::string _username;
-        bool _isoperator;
-        // std::string _éphropathieshéréditaires;
+        std::string _realname;
+        // std::string _éphropathieshéréditaires; 
     public :
-        Client(); //? DONE
-        ~Client(); //? DONE
-        Client(std::string nick, std::string user, bool op); //? DONE
-        Client(const Client &src); //? DONE
-        Client &operator=(const Client &copy); //? DONE
+    // == CANON ================================================================================================
+        Client();
+        ~Client(); 
+        Client(std::string nick, std::string user, std::string realname);
+        Client(const Client &src);
+        Client &operator=(const Client &copy);
+    // == SETTERS ================================================================================================
+        void setUser(std::string username); 
+        void setNick(std::string nickname);
+        void setReal(std::string realname);
 
-
-        int kick(std::string username);
-        int invite(std::string username);
-        void topic(std::string content);
-        int mode(char type);
-
-        std::string getUser(); //? DONE
-        std::string getNick(); //? DONE
-
-        void setUser(std::string user); //? DONE
-        void setNick(std::string nick); //? DONE
-        void setOp(); //? DONE
+    // == GETTERS ================================================================================================
+        std::string getUser();
+        std::string getNick(); 
+        std::string getReal();
 
 
 };
