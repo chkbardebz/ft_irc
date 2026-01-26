@@ -130,15 +130,6 @@ void acceptNewConnexion(std::map<int, Client>& huntrill, struct pollfd *fds, int
     }
 }
 
-bool Error(std::map<int, Client> &huntrill, int client_fd, char* line)
-{
-    (void)huntrill;
-    (void)client_fd;
-    (void)line;
-    std::cout << "vaffanculo\n";
-    return (true);
-}
-
 
 bool fullisspace(std::string str, int i)
 {
@@ -183,8 +174,8 @@ bool user_set(std::map<int, Client> &huntrill, int client_fd, char* line)
 
 void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds)
 {
-    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line) = {&nick_set, &user_set, &privmsg, &Error};
-    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG","ERROR"};
+    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line) = {&nick_set, &user_set, &privmsg};
+    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG"};
 
     for (int i = 1; i <= MAX_CLIENTS; i++) //? RECOIT LES MESSAGES ET LES REDISTRIBUE PARMIS TOUS LES CLIENTS
     {
