@@ -70,37 +70,27 @@ bool nick_check_duplicate(std::map<int, Client>& huntrill, std::string nickname)
 bool nick_set(std::map<int, Client> &huntrill, int client_fd, char* line)
 {
     std::stringstream ss(line);
-    std::string cmd, nickname, more;
+    std::string cmd, nickname; //, more
 
-    ss >> cmd >> nickname >> more;
+    ss >> cmd >> nickname; // >> more
     if (nickname.empty()) //? err: pas de nickname fourni
     {
-        write(client_fd, "No nickname.\n", 14);
+        write(client_fd, "431 ERR_NONICKNAMEGIVEN\n", 21);
         return (false);
     }
-    if (!more.empty()) //? err: pas de nickname fourni
-    {
-        write(client_fd, "t'as cru quoi r n'a change la ptn dta mere.\n", 45);
-        return (false);
-    }
+    // if (!more.empty()) //? err: pas de nickname fourni //! si plusieurs args envoye seul le premier est retenu pour devenir le nickname le reste est ignore + pas de msg d'err
+    // {
+    //     write(client_fd, "t'as cru quoi r n'a change la ptn dta mere.\n", 45);
+    //     return (false);
+    // }
     if (nick_check_duplicate(huntrill, nickname) == false) // err: nickname deja existant 
     {
-        write(client_fd, "Username already taken.\n", 25);
+        write(client_fd, "433 ERR_NICKNAMEINUSE\n", 23);
         return (false);
     }
-    if (std::isdigit(nickname[0])) // err: first elem isdigit
+    if (std::isdigit(nickname[0]) || !isValidChar(nickname, 1) || nickname.size() > 9) // err: first elem isdigit
     {
-        write(client_fd, "met une lettre au debut sale con.\n", 35);
-        return (false);
-    }
-    if (!isValidChar(nickname, 1))
-    {
-        write(client_fd, "Only char\n", 11);
-        return (false);
-    }
-    if (nickname.size() > 9)
-    {
-        write(client_fd, "max 9 letters\n", 15);
+        write(client_fd, "432 ERR_ERRONEUSNICKNAME\n", 26);
         return (false);
     }
 
@@ -166,12 +156,11 @@ void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds)
             std::string cmd;
 
             ss >> cmd;
-
-            if (n <= 0) //? FERME LE FD CORRESPONDANT AU CLIENT QUI SE DECONNECTE
-            {
+            if (n <= 0) //? FERME LE FD CORRESPONDANT AU CLIENT QUI SE DECONNECTE 
+            { //! a mettre dans la fonction quit propre a faire
+                huntrill.erase(fds[i].fd);
                 close(fds[i].fd); 
                 fds[i].fd = -1; //? Reset le fd au status "inutilise"
-                huntrill.erase(fds[i].fd);
             }
             for (size_t j = 0; j < 2 ; j++)
             {
@@ -200,6 +189,7 @@ int main(int ac, char **av)
     while(1)
     {
         poll(fds, MAX_CLIENTS + 1, -1);
+
         acceptNewConnexion(huntrill, fds, servfd);
         AcceptNewCommand(huntrill, fds);
     }
