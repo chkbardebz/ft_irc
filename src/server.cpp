@@ -20,13 +20,14 @@ void print_ip(const struct addrinfo *ai)
 }
 
 
-int setSocketServer(Server &serverDetails)
+int setSocketServer(Server &serverDetails, char *port)
 {
+    std::cout << "port : " << port << "|" << std::endl;
     std::memset(&serverDetails.hints, 0, sizeof(serverDetails.hints));
     serverDetails.hints.ai_family = AF_UNSPEC;
     serverDetails.hints.ai_socktype = SOCK_STREAM;
     serverDetails.hints.ai_flags = AI_PASSIVE; // IMPORTANT
-    getaddrinfo(NULL, "6667", &serverDetails.hints, &serverDetails.res);
+    getaddrinfo(NULL, port, &serverDetails.hints, &serverDetails.res);
     int servsocket = socket(serverDetails.res->ai_family, serverDetails.res->ai_socktype, serverDetails.res->ai_protocol);
     int opt = 1;
     if (setsockopt(servsocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) //? pour eviter le cooldown de con
@@ -67,10 +68,18 @@ bool nick_check_duplicate(std::map<int, Client>& huntrill, std::string nickname)
 
 // std::string cmd, nickname; tres tres utile pour command avec plusieurs args comme PRIVMSG / CHANNEL... etc
 // nick peut se renommer pas user
-bool nick_set(std::map<int, Client> &huntrill, int client_fd, char* line)
+bool nick_set(std::map<int, Client> &huntrill, int client_fd, char* line, Server serverDetails)
 {
+    
+    (void)serverDetails;
     std::stringstream ss(line);
     std::string cmd, nickname; //, more
+    std::map<int, Client>::iterator it = huntrill.find(client_fd);
+    if (it->second.pass_is_set == false)
+    {
+        write(client_fd, "bah bro pass d'abord et apres on voit", 38);
+        return (false);
+    }
 
     ss >> cmd >> nickname; // >> more
     if (nickname.empty()) //? err: pas de nickname fourni
@@ -94,7 +103,7 @@ bool nick_set(std::map<int, Client> &huntrill, int client_fd, char* line)
         return (false);
     }
 
-    std::map<int, Client>::iterator it = huntrill.find(client_fd);
+    
     if (it != huntrill.end())  // Vérifier que le client existe
         it->second.setNick(nickname);
     // std::cout << "STATUS: " << std::endl;
@@ -142,9 +151,15 @@ bool fullisspace(std::string str, int i)
 }
 
 
-bool user_set(std::map<int, Client> &huntrill, int client_fd, char* line)
+bool user_set(std::map<int, Client> &huntrill, int client_fd, char* line, Server serverDetails)
 {
+    (void)serverDetails;
     std::map<int, Client>::iterator it = huntrill.find(client_fd); //! pas de verif si it == huntrill.end() ?
+    if (it->second.getNick() == NO_NICKNAME)
+    {
+        write(client_fd, "bah bro ??? NICK et/ou PASS d'abord nan ?", 42);
+        return (false);
+    }
     if (it->second.getUser() != NO_USERNAME)
     {
         write(client_fd, "462 ERR_ALREADYREGISTRED USER\n", 31);
@@ -172,10 +187,10 @@ bool user_set(std::map<int, Client> &huntrill, int client_fd, char* line)
 }
 
 
-void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds)
+void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds, Server serverDetails)
 {
-    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line) = {&nick_set, &user_set, &privmsg};
-    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG"};
+    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line, Server serverDetails) = {&nick_set, &user_set, &privmsg, &pass};
+    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG", "PASS"};
 
     for (int i = 1; i <= MAX_CLIENTS; i++) //? RECOIT LES MESSAGES ET LES REDISTRIBUE PARMIS TOUS LES CLIENTS
     {
@@ -196,24 +211,26 @@ void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds)
                 close(fds[i].fd); 
                 fds[i].fd = -1; //? Reset le fd au status "inutilise"
             }
-            for (size_t j = 0; j < 3 ; j++)
+            for (size_t j = 0; j < 4 ; j++)
             {
                 if (std::strcmp(cmd.c_str(), cmd_names[j].c_str()) == 0)
-                    funcs[j](huntrill, fds[i].fd, line_buf); //je n'appel pas un ptr sur "fn libre" mais sur des methodes membres de la classe intern d'ou l'utilisation de this->
+                    funcs[j](huntrill, fds[i].fd, line_buf, serverDetails); //je n'appel pas un ptr sur "fn libre" mais sur des methodes membres de la classe intern d'ou l'utilisation de this->
             }
         }
     }
 }
 
+
 int main(int ac, char **av)
 {
-    (void)ac;
-    (void)av;
+    if (ac != 3)
+        return(write(0, "Usage: ./ircserv <port> <password>\n", 36));
 
     Server serverDetails;
-    int servfd = setSocketServer(serverDetails);
+    serverDetails._password = std::string(av[2]);
+    int servfd = setSocketServer(serverDetails, av[1]);
     bind(servfd, serverDetails.res->ai_addr, serverDetails.res->ai_addrlen);
-    print_ip(serverDetails.res);
+    print_ip(serverDetails.res); //? la de base
     listen(servfd, 10);
     struct pollfd fds[MAX_CLIENTS + 1];
     setFds(fds, servfd);
@@ -225,13 +242,13 @@ int main(int ac, char **av)
         poll(fds, MAX_CLIENTS + 1, -1);
 
         acceptNewConnexion(huntrill, fds, servfd);
-        AcceptNewCommand(huntrill, fds);
+        AcceptNewCommand(huntrill, fds, serverDetails);
     }
     freeaddrinfo(serverDetails.res);
 }
 
 // todo 
-// - des qu'on arrive brianstorming : toi tu me rara tout et moi j'explique mon bebe + ca me fait revise
+//? - des qu'on arrive brianstorming : toi tu me rara tout et moi j'explique mon bebe + ca me fait revise
 
 
 //todo 
@@ -240,7 +257,8 @@ int main(int ac, char **av)
 //? - implementer list // Client  
 //? - code modulaire ==> remettre au propre ==> channel ?? 
 //? - prevoir si un client veut se connecter mais plus de place
-// - les COMMANDES 
+//* - les COMMANDES 
+//  - penser a reset Client lorsque le fd se deco -> already registered
 
 
 

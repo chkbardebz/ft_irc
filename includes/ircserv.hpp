@@ -22,10 +22,13 @@
 
 struct Server 
 {
+    std::string _password;
     struct addrinfo hints;
     struct addrinfo *res;
 };
 
-bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line);
+bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line, Server serverDetails);
+
+bool pass(std::map<int, Client> &huntrill, int client_fd, char* line, Server serverDetails);
 
 #endif

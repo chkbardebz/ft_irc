@@ -10,8 +10,9 @@ bool check_if_fullofsapce(std::string str)
     return (true);
 }
 
-bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line)
+bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line, Server serverDetails)
 {
+    (void)serverDetails;
     std::stringstream ss(line);
     std::string cmd, client, first ,message;
     std::string sendernick, senderuser ,recievernick;

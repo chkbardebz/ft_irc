@@ -1,11 +1,11 @@
 #include "../includes/client.hpp"
 
-Client::Client() : _nickname(NO_NICKNAME), _username(NO_USERNAME), _realname(NO_REALNAME)
+Client::Client() : _nickname(NO_NICKNAME), _username(NO_USERNAME), _realname(NO_REALNAME), pass_is_set(false)
 {
     // std::cout << "Client created" << std::endl;
 }
 
-Client::Client(std::string user, std::string nick, std::string realname) : _nickname(user), _username(nick), _realname(realname)
+Client::Client(std::string user, std::string nick, std::string realname) : _nickname(user), _username(nick), _realname(realname), pass_is_set(false)
 {
     // std::cout << nick << " Client created" << std::endl;
 }

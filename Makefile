@@ -8,7 +8,8 @@ SRC_DIR     := src
 OBJ_DIR     := obj
 
 SRCS 		=	src/client.cpp \
-				src/server.cpp src/privmsg.cpp
+				src/server.cpp src/privmsg.cpp \
+				src/pass.cpp
 
 OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 

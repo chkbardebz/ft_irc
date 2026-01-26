@@ -16,6 +16,7 @@ class Client
         std::string _realname;
         // std::string _éphropathieshéréditaires; 
     public :
+        bool pass_is_set;
     // == CANON ================================================================================================
         Client();
         ~Client(); 
