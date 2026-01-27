@@ -4,9 +4,8 @@
 # include <iostream>
 # include <string>
 
-# define NO_NICKNAME "no_nickname"
-# define NO_USERNAME "no_username"
-# define NO_REALNAME "no_realname"
+
+# define NOT_INITIALIZED "\0"
 
 class Client
 {
@@ -14,9 +13,11 @@ class Client
         std::string _nickname;
         std::string _username;
         std::string _realname;
+        bool _status_nick;
+        bool _status_user;
+        bool _status_pass;
         // std::string _éphropathieshéréditaires; 
-    public :
-        bool pass_is_set;
+    public :   
     // == CANON ================================================================================================
         Client();
         ~Client(); 
@@ -28,12 +29,18 @@ class Client
         void setNick(std::string nickname);
         void setReal(std::string realname);
 
+        void setStatusNIck(bool new_status); 
+        void setStatusUser(bool new_status);
+        void setStatusPass(bool new_status);
+
     // == GETTERS ================================================================================================
         std::string getUser();
         std::string getNick(); 
         std::string getReal();
 
-
+        bool getStatusNick();
+        bool getStatusUser(); 
+        bool getStatusPass();
 };
 
 #endif

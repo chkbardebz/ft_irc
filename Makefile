@@ -7,9 +7,14 @@ RM          = rm -f
 SRC_DIR     := src
 OBJ_DIR     := obj
 
-SRCS 		=	src/client.cpp \
-				src/server.cpp src/privmsg.cpp \
-				src/pass.cpp
+SRCS 		=	src/main.cpp \
+				src/server.cpp \
+				src/client.cpp \
+				src/cmd_pass.cpp \
+				src/cmd_nick.cpp \
+				src/cmd_user.cpp \
+				src/cmd_privmsg.cpp \
+				src/cmd_join.cpp \
 
 OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
