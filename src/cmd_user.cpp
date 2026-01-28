@@ -6,7 +6,7 @@ void ft_putstr_fd(const char *str, int fd)
         write(fd , &str[i], 1);
 }
 
-bool fullisspace(std::string str, int i)
+bool fullisspace(std::string str, size_t i)
 {
     for(; str[i]; i++)
     {
@@ -50,7 +50,7 @@ bool user(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
     getline(ss, realname);
     while (realname[0] && isspace(realname[0]))
         realname.erase(0, 1);
-    if (realname.empty() || realname[0] != ':' || fullisspace(realname, 2) == true)
+    if (realname.empty() || realname[0] != ':' || fullisspace(realname, 1) == true)
         return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false);
     realname.erase(0, 1); //? supp le ':'
     it->second.setUser(username);

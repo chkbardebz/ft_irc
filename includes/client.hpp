@@ -4,6 +4,7 @@
 # include <iostream>
 # include <string>
 
+# include "server.hpp"
 
 # define NOT_INITIALIZED "\0"
 

@@ -1,5 +1,4 @@
 #include "../includes/server.hpp"
-#include "../includes/client.hpp"
 
 void print_ip(const struct addrinfo *ai)
 {
@@ -56,8 +55,8 @@ void acceptNewConnexion(std::map<int, Client>& huntrill, struct pollfd *fds, int
 
 void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds, Server &serverDetails)
 {
-    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails) = {&nick, &user, &privmsg, &pass, &join};
-    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG", "PASS", "JOIN"};
+    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails) = {&nick, &user, &privmsg, &pass, &join, &topic};
+    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG", "PASS", "JOIN", "TOPIC"};
 
     for (int i = 1; i <= MAX_CLIENTS; i++) //? RECOIT LES MESSAGES ET LES REDISTRIBUE PARMIS TOUS LES CLIENTS
     {
@@ -71,12 +70,13 @@ void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds, Serve
             ss >> cmd;
             if (n <= 0) //? FERME LE FD CORRESPONDANT AU CLIENT QUI SE DECONNECTE 
             { 
+
                 //! a mettre dans la fonction quit propre a faire
                 huntrill.erase(fds[i].fd);
                 close(fds[i].fd); 
                 fds[i].fd = -1; //? Reset le fd au status "inutilise"
             }
-            for (size_t j = 0; j < 5 ; j++)
+            for (size_t j = 0; j < 6 ; j++)
             {
                 if (std::strcmp(cmd.c_str(), cmd_names[j].c_str()) == 0)
                     funcs[j](huntrill, fds[i].fd, line_buf, serverDetails); //je n'appel pas un ptr sur "fn libre" mais sur des methodes membres de la classe intern d'ou l'utilisation de this->
@@ -143,6 +143,8 @@ int main(int ac, char **av)
 //* - les COMMANDES : CHANNEL
 //  - penser a reset Client lorsque le fd se deco -> already registered
 
+// - changer parsing rajouter verif isdigit pour port par exemple et autre 
+// - couper fn privmsg en sous fonction pour gerer les #channels
 
 
 // - fonction quit + signaux + mettre des try si necessaire pour eviter des possibles bad_alloc et autre

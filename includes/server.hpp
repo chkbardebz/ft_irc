@@ -13,9 +13,11 @@
 
 # include <map>
 # include "client.hpp"
+# include "channel.hpp"
 
 
-#include <sstream> //parsing
+# include <sstream> //parsing
+# include <set>
 
 #define NO_PASS "\0"
 #define MAX_CLIENTS 42
@@ -49,6 +51,8 @@ public:
     struct addrinfo &getHints(); 
     struct addrinfo *getRes() const;
     struct addrinfo **getResAddr();
+
+    std::map<std::string, Channel> makala;
 };
 
 bool pass(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails);
@@ -56,9 +60,12 @@ bool nick(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
 bool user(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails);
 bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line, Server &serverDetails);
 bool join(std::map<int ,Client> &huntrill, int client_fd, char *line, Server &serverDetails);
+bool topic(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails);
 
 void is_client_welcome(std::map<int, Client> &huntrill, int client_fd);
 bool is_client_set(std::map<int, Client> &huntrill, int client_fd);
+
+bool check_if_fullofsapce(std::string str); //! mettre dans utils
 
 #endif
 

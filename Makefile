@@ -10,11 +10,13 @@ OBJ_DIR     := obj
 SRCS 		=	src/main.cpp \
 				src/server.cpp \
 				src/client.cpp \
+				src/channel.cpp \
 				src/cmd_pass.cpp \
 				src/cmd_nick.cpp \
 				src/cmd_user.cpp \
 				src/cmd_privmsg.cpp \
 				src/cmd_join.cpp \
+				src/cmd_topic.cpp
 
 OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 

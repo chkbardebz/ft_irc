@@ -1,4 +1,3 @@
-#include "../includes/client.hpp"
 #include "../includes/server.hpp"
 
 Client::Client() : _nickname(NOT_INITIALIZED), _username(NOT_INITIALIZED), _realname(NOT_INITIALIZED), _status_nick(false), _status_user(false), _status_pass(false)
