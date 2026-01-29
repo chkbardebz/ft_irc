@@ -1,29 +1,51 @@
-NAME = ircserv
-CC = c++
-CFLAGS = -std=c++98 -Wall -Wextra -Werror -MMD -MP
-SRCS = src/main.cpp 
+NAME        = ircserv
+CPP         = c++
+CPPFLAGS    = -Wall -Wextra -Werror -std=c++98
+DIR_DUP     = mkdir -p $(@D)
+RM          = rm -f
+		
+SRC_DIR     := src
+OBJ_DIR     := obj
 
-OBJ_DIR = obj
-OBJS = $(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
-DEPS = $(OBJS:.o=.d)
-RM = rm -f
+SRCS 		=	src/main.cpp \
+				src/server.cpp \
+				src/client.cpp \
+				src/channel.cpp \
+				src/cmd_pass.cpp \
+				src/cmd_nick.cpp \
+				src/cmd_user.cpp \
+				src/cmd_privmsg.cpp \
+				src/cmd_join.cpp \
+				src/cmd_topic.cpp
+
+OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+
+CYAN		= \033[36m
+RESET		= \033[0m
+UP			= \033[A #remonte le curseur d'une ligne dans le terminal
+CUT			= \033[K #efface la ligne courante
+
+$(NAME): $(OBJS)
+	@$(CPP) $(CPPFLAGS) $(OBJS) -o $(NAME) 
+	@printf "$(CYAN)Compiling [$(NAME)]$(RESET)"
+	@sleep 0.2 && printf "$(CYAN).$(RESET)" && sleep 0.2 && printf "$(CYAN).$(RESET)" && sleep 0.2 && printf "$(CYAN).$(RESET)\n"
+	@printf "$(UP)$(CUT)"
+	@printf "$(CYAN)Finished [$(NAME)]$(RESET)\n"
+	@printf "$(UP)$(CUT)"
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@$(DIR_DUP)
+	@$(CPP) $(CPPFLAGS) -c -o $@ $<
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
-
-$(OBJ_DIR)/%.o: %.cpp
-	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
--include $(DEPS)
-
 clean:
-	$(RM) -r $(OBJ_DIR)
+	@$(RM) $(OBJS)
+	@rm -rf $(OBJ_DIR)
+	@printf "$(CYAN)Cleanup done.$(RESET)\n"
 
 fclean: clean
-	$(RM) $(NAME)
+	@$(RM) $(NAME)
 
 re: fclean all
 

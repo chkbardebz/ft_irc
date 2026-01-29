@@ -4,32 +4,44 @@
 # include <iostream>
 # include <string>
 
+# include "server.hpp"
+
+# define NOT_INITIALIZED "\0"
+
 class Client
 {
     private :
-        bool isoperator;
-        std::string _username;
         std::string _nickname;
-        std::string _éphropathieshéréditaires;
-    public :
-        Client(); //? DONE
-        ~Client(); //? DONE
-        Client(std::string user, std::string nick, bool op); //? DONE
-        Client(const Client &src); //? DONE
-        Client &operator=(const Client &copy); //? DONE
+        std::string _username;
+        std::string _realname;
+        bool _status_nick;
+        bool _status_user;
+        bool _status_pass;
+        // std::string _éphropathieshéréditaires; 
+    public :   
+    // == CANON ================================================================================================
+        Client();
+        ~Client(); 
+        Client(std::string nick, std::string user, std::string realname);
+        Client(const Client &src);
+        Client &operator=(const Client &copy);
+    // == SETTERS ================================================================================================
+        void setUser(std::string username); 
+        void setNick(std::string nickname);
+        void setReal(std::string realname);
 
+        void setStatusNIck(bool new_status); 
+        void setStatusUser(bool new_status);
+        void setStatusPass(bool new_status);
 
-        int kick(std::string username);
-        int invite(std::string username);
-        void topic(std::string content);
-        int mode(char type);
+    // == GETTERS ================================================================================================
+        std::string getUser();
+        std::string getNick(); 
+        std::string getReal();
 
-        std::string getUser(); //? DONE
-        std::string getNick(); //? DONE
-
-        int setOp(); //? DONE
-
-
+        bool getStatusNick();
+        bool getStatusUser(); 
+        bool getStatusPass();
 };
 
 #endif
