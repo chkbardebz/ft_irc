@@ -40,6 +40,10 @@ public :
     void send_msg(std::string message, std::map<int, Client> &huntrill, int client_fd);
     void set_new_fd(int client_fd);
     bool is_fd_in_channel(int client_fd);
+    bool client_quit_channel(int client_fd); // PART
+
+    bool channel_size(); // PART
+
 };
 
 #endif

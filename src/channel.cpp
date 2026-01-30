@@ -85,3 +85,31 @@ bool Channel::is_fd_in_channel(int client_fd)
     }
     return (false);
 }
+
+bool Channel::client_quit_channel(int client_fd)
+{
+    // supprimer l'utilisateur des clients OP
+    for (std::set<int>::iterator it = fds_op.begin(); it != fds_op.end(); it++)
+    {
+        if (*it == client_fd)
+        {
+            fds_op.erase(it);
+            return (true);
+        }
+    }
+    // supprime l'utilisateur des clients
+    for (std::set<int>::iterator it = fds_channel.begin(); it != fds_channel.end(); it++)
+    {
+        if (*it == client_fd)
+        {
+            fds_channel.erase(it);
+            return (true);
+        }
+    }
+    return (false);
+}
+
+bool Channel::channel_size()
+{
+    return (fds_channel.size());
+}

@@ -46,7 +46,7 @@ void acceptNewConnexion(std::map<int, Client>& huntrill, struct pollfd *fds, int
         }
         if (i == MAX_CLIENTS)
         {
-            write(new_client_fd, "Err: no no noooooo\n", 20);
+            std::cout << "Error: max clients allowed is " << MAX_CLIENTS << std::endl;
             close(new_client_fd); 
         }
     }
@@ -55,8 +55,8 @@ void acceptNewConnexion(std::map<int, Client>& huntrill, struct pollfd *fds, int
 
 void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds, Server &serverDetails)
 {
-    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails) = {&nick, &user, &privmsg, &pass, &join, &topic};
-    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG", "PASS", "JOIN", "TOPIC"};
+    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails) = {&nick, &user, &privmsg, &pass, &join, &topic, &part};
+    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG", "PASS", "JOIN", "TOPIC", "PART"};
 
     for (int i = 1; i <= MAX_CLIENTS; i++) //? RECOIT LES MESSAGES ET LES REDISTRIBUE PARMIS TOUS LES CLIENTS
     {
@@ -76,7 +76,7 @@ void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds, Serve
                 close(fds[i].fd); 
                 fds[i].fd = -1; //? Reset le fd au status "inutilise"
             }
-            for (size_t j = 0; j < 6 ; j++)
+            for (size_t j = 0; j < 7 ; j++)
             {
                 if (std::strcmp(cmd.c_str(), cmd_names[j].c_str()) == 0)
                     funcs[j](huntrill, fds[i].fd, line_buf, serverDetails); //je n'appel pas un ptr sur "fn libre" mais sur des methodes membres de la classe intern d'ou l'utilisation de this->
@@ -107,6 +107,7 @@ int setSocketServer(Server &serverDetails, char *port)
 // std::cout << "client/fd: " << it->first << std::endl;
 // std::cout << "nick: " << it->second.getNick() << std::endl;
 // std::cout << "user: " << it->second.getUser() << std::endl;
+
 int main(int ac, char **av)
 {
     if (ac != 3)
@@ -139,12 +140,15 @@ int main(int ac, char **av)
 
 
 //todo 
-//* - les COMMANDES : CHANNEL
-//  - penser a reset Client lorsque le fd se deco -> already registered
+// - les COMMANDES : MODE, PART, INVITE, KICK, QUIT (+ //signaux)
+// - penser a reset Client lorsque le fd se deco -> already registered
+// - gerer le cas : $> nc -C 127.0.0.1 6667
+//                   >com^Dman^Dd
 
+// - corriger msg d'err + msg 999 ERR avec bon code 
 // - changer parsing rajouter verif isdigit pour port par exemple et autre 
 // - couper fn privmsg en sous fonction pour gerer les #channels
 
 
-// - fonction quit + signaux + mettre des try si necessaire pour eviter des possibles bad_alloc et autre
-// - bonus / envoi de fichiers
+// - securiser chaque fn avec if si besoin + mettre des try si necessaire pour eviter des possibles bad_alloc et autre
+// - bonus: envoi de fichiers et bot

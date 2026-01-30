@@ -61,12 +61,17 @@ bool user(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
 bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line, Server &serverDetails);
 bool join(std::map<int ,Client> &huntrill, int client_fd, char *line, Server &serverDetails);
 bool topic(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails);
+bool part(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails);
+
 
 void is_client_welcome(std::map<int, Client> &huntrill, int client_fd);
 bool is_client_set(std::map<int, Client> &huntrill, int client_fd);
 
 bool check_if_fullofsapce(std::string str); //! mettre dans utils
 
+
+
+bool send_msg_to_channel(Server &serverDetails, std::map<int, Client> &huntrill, int client_fd, std::string channel, std::string message);
 #endif
 
     
