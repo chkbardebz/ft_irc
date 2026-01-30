@@ -18,7 +18,6 @@ bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line, Server 
         std::map<std::string, Channel>::iterator it_channel = serverDetails.makala.begin();
         for (; it_channel != serverDetails.makala.end() ; it_channel++)
         {
-            std::cout << "channel name: " << it_channel->first << std::endl;
             if (strcmp(it_channel->first.c_str(), client.c_str()) == 0)
             {
                 if (it_channel->second.is_fd_in_channel(client_fd) == false)

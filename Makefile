@@ -16,7 +16,8 @@ SRCS 		=	src/main.cpp \
 				src/cmd_user.cpp \
 				src/cmd_privmsg.cpp \
 				src/cmd_join.cpp \
-				src/cmd_topic.cpp
+				src/cmd_topic.cpp \
+				src/cmd_mode.cpp
 
 OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 

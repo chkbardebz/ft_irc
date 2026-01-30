@@ -61,6 +61,7 @@ bool user(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
 bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line, Server &serverDetails);
 bool join(std::map<int ,Client> &huntrill, int client_fd, char *line, Server &serverDetails);
 bool topic(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails);
+bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails);
 
 void is_client_welcome(std::map<int, Client> &huntrill, int client_fd);
 bool is_client_set(std::map<int, Client> &huntrill, int client_fd);
