@@ -28,7 +28,8 @@ bool topic(std::map<int, Client> &huntrill, int client_fd, char* line, Server &s
         send(client_fd, topicString.c_str(), topicString.size(), 0);
         return (true);
     }
-    else //! lorsque MODE sera fait mettre verif si les restrictions de TOPIC sont on/off
-        it->second.setTopic(topic);
+    if (it->second.is_fd_op(client_fd) == false && it->second.getTopicStatus() == true)
+        return (write(client_fd, "482 ERR_CHANOPRIVSNEEDED\n", 26), false);
+    it->second.setTopic(topic);
     return (true);
 }

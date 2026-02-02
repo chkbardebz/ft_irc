@@ -55,8 +55,8 @@ void acceptNewConnexion(std::map<int, Client>& huntrill, struct pollfd *fds, int
 
 void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds, Server &serverDetails)
 {
-    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails) = {&nick, &user, &privmsg, &pass, &join, &topic, &part};
-    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG", "PASS", "JOIN", "TOPIC", "PART"};
+    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails) = {&nick, &user, &privmsg, &pass, &join, &topic, &part, &invite, &mode};
+    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG", "PASS", "JOIN", "TOPIC", "PART", "INVITE", "MODE"};
 
     for (int i = 1; i <= MAX_CLIENTS; i++) //? RECOIT LES MESSAGES ET LES REDISTRIBUE PARMIS TOUS LES CLIENTS
     {
@@ -76,7 +76,7 @@ void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds, Serve
                 close(fds[i].fd); 
                 fds[i].fd = -1; //? Reset le fd au status "inutilise"
             }
-            for (size_t j = 0; j < 7 ; j++)
+            for (size_t j = 0; j < 9 ; j++)
             {
                 if (std::strcmp(cmd.c_str(), cmd_names[j].c_str()) == 0)
                     funcs[j](huntrill, fds[i].fd, line_buf, serverDetails); //je n'appel pas un ptr sur "fn libre" mais sur des methodes membres de la classe intern d'ou l'utilisation de this->

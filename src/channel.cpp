@@ -1,6 +1,6 @@
 #include "../includes/server.hpp"
 
-Channel::Channel(std::string name) : _name(name), _topic(":No topic is set")
+Channel::Channel(std::string name) : _name(name), _topic(":No topic is set"), _chan_password(":No password is set"), _max_user(0), _is_invite_only(false), _is_topic_restricted(false), _is_chan_password(false), _is_user_limit(false)
 {
 
 }
@@ -18,6 +18,12 @@ Channel &Channel::operator=(const Channel &src) //! rajouter chaque membre de cl
         this->fds_op = src.fds_op;
         this->_topic = src._topic;
         this->fds_channel = src.fds_channel;
+        this->_chan_password = src._chan_password;
+        this->_max_user = src._max_user;
+        this->_is_invite_only = src._is_invite_only;
+        this->_is_topic_restricted = src._is_topic_restricted;
+        this->_is_chan_password = src._is_chan_password;
+        this->_is_user_limit = src._is_user_limit;
     }
     return (*this);
 }
@@ -27,7 +33,7 @@ Channel::~Channel()
 
 }
 
-std::string Channel::getName()
+const std::string &Channel::getName()
 {
     return (_name);
 }
@@ -42,7 +48,7 @@ size_t Channel::getSize()
     return (fds_channel.size());
 }
 
-std::string Channel::getTopic()
+const std::string &Channel::getTopic()
 {
     return (_topic);
 }
@@ -52,17 +58,87 @@ void Channel::setTopic(std::string str)
     _topic = str;
 }
 
+void Channel::setMode(char mode, bool add, const char *arg) // char * car peut etre NULL
+{
+    if (mode == 'i')
+        _is_invite_only = add;
+    if (mode == 't')
+        _is_topic_restricted = add;
+    if (mode == 'k')
+    {
+        _is_chan_password = add;
+        setChanPassword(arg);
+    }
+    if (mode == 'l')
+    {
+        _is_user_limit = add;
+        if (add == true)
+            _max_user = std::atoi(arg);
+        else
+            _max_user = 0;
+    }
+}
+
+void Channel::removeOp(int client_fd)
+{
+    std::set<int>::iterator it = fds_op.find(client_fd);
+    fds_op.erase(*it);
+}
+
+void Channel::setOp(int client_fd)
+{
+    fds_op.insert(client_fd);
+}
+
+bool Channel::getUserLimitStatus()
+{
+    return (_is_user_limit);
+}
+
+int Channel::getUserLimit()
+{
+    return (_max_user);
+}
+
+bool Channel::getPasswordStatus()
+{
+    return _is_chan_password;
+}
+
+const std::string &Channel::getChanPassword()
+{
+    return _chan_password;
+}
+
+void Channel::setChanPassword(const std::string &str)
+{
+    _chan_password = str;
+}
+
+bool Channel::getInviteOnlyStatus()
+{
+    return (_is_invite_only);
+}
+
 void Channel::send_msg(std::string message, std::map<int, Client> &huntrill, int client_fd)
 {
+    std::map<int, Client>::iterator it_hunt = huntrill.find(client_fd);
     for (std::set<int>::iterator it = fds_channel.begin(); it != fds_channel.end(); it++)
     {
         std::string tmp = "";
         if (client_fd == *it)
             continue;
-        std::map<int, Client>::iterator it_hunt = huntrill.find(*it);
         tmp = ":" + it_hunt->second.getNick() + "!" + it_hunt->second.getUser() + "@localhost " + "PRIVMSG " + _name + " " + message + '\n'; //! localhost ptetpas
         send(*it, tmp.c_str(), tmp.size(), 0);
     }
+}
+
+void Channel::send_msg_to_fd(std::map<int, Client> &huntrill, std::string cmd, std::string message, int receiver_fd, int sender_fd)
+{
+    std::map<int, Client>::iterator it_send = huntrill.find(sender_fd);
+    std::map<int, Client>::iterator it_receive = huntrill.find(receiver_fd);
+    std::string msg = ":" + it_send->second.getNick() + "!" + it_send->second.getUser() + "@localhost " + cmd + it_receive->second.getNick() + " " + message + '\n';
+    send(receiver_fd, msg.c_str(), msg.size(), 0);
 }
 
 void Channel::set_new_fd(int client_fd)
@@ -85,6 +161,7 @@ bool Channel::is_fd_in_channel(int client_fd)
     }
     return (false);
 }
+
 
 bool Channel::client_quit_channel(int client_fd)
 {
@@ -109,7 +186,45 @@ bool Channel::client_quit_channel(int client_fd)
     return (false);
 }
 
+
+bool Channel::is_fd_op(int client_fd)
+{
+    if (is_fd_in_channel(client_fd) == false)
+        return (false);
+    for (std::set<int>::iterator it = fds_op.begin(); it != fds_op.end(); it++)
+    {
+        if (*it == client_fd)
+            return (true);
+    }
+    return (false);
+}
+
 bool Channel::is_there_clients()
 {
     return (fds_channel.size());
+}
+
+bool Channel::is_fd_invited(int client_fd)
+{
+    for (std::set<int>::iterator it = fds_invited.begin(); it != fds_invited.end(); it++)
+    {
+        if (*it == client_fd)
+            return (true);
+    }
+    return (false);
+}
+
+void Channel::invite_fd(int fd_invited)
+{
+    fds_invited.insert(fd_invited);
+}
+
+void Channel::remove_invited(int client_fd)
+{
+    fds_invited.erase(client_fd);
+}
+
+bool Channel::getTopicStatus()
+{
+    return (_is_topic_restricted);
 }
