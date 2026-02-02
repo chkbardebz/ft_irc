@@ -18,7 +18,7 @@ private :
     bool _is_topic_restricted;
     bool _is_chan_password;
     bool _is_user_limit;
-    //* std::set<int> fds_invited;
+    std::set<int> fds_invited;
     std::set<int> fds_op;
     std::set<int> fds_channel;
 
@@ -47,11 +47,16 @@ public :
     bool getPasswordStatus();
     const std::string &getChanPassword();
     void setChanPassword(const std::string &str);
+    bool getInviteOnlyStatus();
 
     void send_msg(std::string message, std::map<int, Client> &huntrill, int client_fd);
+    void send_msg_to_fd(std::map<int, Client> &huntrill, std::string cmd, std::string message, int receiver_fd, int sender_fd); //! Ca fait pas trop de sens que la func soit dans Channel
     void set_new_fd(int client_fd);
     bool is_fd_in_channel(int client_fd);
     bool is_fd_op(int client_fd);
+    bool is_fd_invited(int client_fd);
+    void invite_fd(int fd_invited);
+    void remove_invited(int client_fd);
 };
 
 #endif

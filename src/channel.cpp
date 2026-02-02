@@ -115,6 +115,11 @@ void Channel::setChanPassword(const std::string &str)
     _chan_password = str;
 }
 
+bool Channel::getInviteOnlyStatus()
+{
+    return (_is_invite_only);
+}
+
 void Channel::send_msg(std::string message, std::map<int, Client> &huntrill, int client_fd)
 {
     std::map<int, Client>::iterator it_hunt = huntrill.find(client_fd);
@@ -126,6 +131,14 @@ void Channel::send_msg(std::string message, std::map<int, Client> &huntrill, int
         tmp = ":" + it_hunt->second.getNick() + "!" + it_hunt->second.getUser() + "@localhost " + "PRIVMSG " + _name + " " + message + '\n'; //! localhost ptetpas
         send(*it, tmp.c_str(), tmp.size(), 0);
     }
+}
+
+void Channel::send_msg_to_fd(std::map<int, Client> &huntrill, std::string cmd, std::string message, int receiver_fd, int sender_fd)
+{
+    std::map<int, Client>::iterator it_send = huntrill.find(sender_fd);
+    std::map<int, Client>::iterator it_receive = huntrill.find(receiver_fd);
+    std::string msg = ":" + it_send->second.getNick() + "!" + it_send->second.getUser() + "@localhost " + cmd + it_receive->second.getNick() + " " + message + '\n';
+    send(receiver_fd, msg.c_str(), msg.size(), 0);
 }
 
 void Channel::set_new_fd(int client_fd)
@@ -159,6 +172,26 @@ bool Channel::is_fd_op(int client_fd)
             return (true);
     }
     return (false);
+}
+
+bool Channel::is_fd_invited(int client_fd)
+{
+    for (std::set<int>::iterator it = fds_invited.begin(); it != fds_invited.end(); it++)
+    {
+        if (*it == client_fd)
+            return (true);
+    }
+    return (false);
+}
+
+void Channel::invite_fd(int fd_invited)
+{
+    fds_invited.insert(fd_invited);
+}
+
+void Channel::remove_invited(int client_fd)
+{
+    fds_invited.erase(client_fd);
 }
 
 bool Channel::getTopicStatus()
