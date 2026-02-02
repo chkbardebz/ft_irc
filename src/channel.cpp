@@ -109,7 +109,7 @@ bool Channel::client_quit_channel(int client_fd)
     return (false);
 }
 
-bool Channel::channel_size()
+bool Channel::is_there_clients()
 {
     return (fds_channel.size());
 }

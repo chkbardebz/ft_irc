@@ -42,7 +42,7 @@ public :
     bool is_fd_in_channel(int client_fd);
     bool client_quit_channel(int client_fd); // PART
 
-    bool channel_size(); // PART
+    bool is_there_clients(); // PART
 
 };
 
