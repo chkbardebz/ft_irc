@@ -11,7 +11,7 @@ bool join(std::map<int ,Client> &huntrill, int client_fd, char *line, Server &se
     std::map<std::string, Channel>::iterator it = serverDetails.makala.begin();
     if (name[0] != '#')
         return (write(client_fd, "476 ERR_BADCHANMASK\n", 21), false);
-    getline(ss, passwd);
+    std::getline(ss, passwd);
     for (; it != serverDetails.makala.end(); it++)
     {
         if (strcmp(name.c_str(), it->second.getName().c_str()) == 0)

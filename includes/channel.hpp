@@ -30,7 +30,7 @@ public :
     ~Channel();
 
     const std::string &getName();
-    std::set<int> getFds();
+    const std::set<int> &getFds();
     size_t getSize();
 
 
@@ -49,8 +49,6 @@ public :
     void setChanPassword(const std::string &str);
     bool getInviteOnlyStatus();
 
-    void send_msg(std::string message, std::map<int, Client> &huntrill, int client_fd);
-    void send_msg_to_fd(std::map<int, Client> &huntrill, std::string cmd, std::string message, int receiver_fd, int sender_fd); //! Ca fait pas trop de sens que la func soit dans Channel
     void set_new_fd(int client_fd);
 
     bool is_fd_in_channel(int client_fd);
@@ -63,6 +61,8 @@ public :
     bool is_fd_invited(int client_fd);
     void invite_fd(int fd_invited);
     void remove_invited(int client_fd);
+
+    void send_msg_to_channel(std::string message, std::map<int, Client> &huntrill, int client_fd);
 
 };
 

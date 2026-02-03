@@ -1,18 +1,13 @@
 #include "../includes/server.hpp"
 
-bool is_space(char c)
-{
-    return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
-}
-
 int count_words(const std::string& str)
 {
     int count = 0;
 
     for (size_t i = 0; i < str.size(); i++)
     {
-        if (!is_space(str[i]) &&
-            (i == 0 || is_space(str[i - 1])))
+        if (!std::isspace(str[i]) &&
+            (i == 0 || std::isspace(str[i - 1])))
         {
             count++;
         }
@@ -32,7 +27,7 @@ bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
         return (write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23), false);
     if (it->second.is_fd_op(client_fd) == false)
         return (write(client_fd, "482 ERR_CHANOPRIVSNEEDED\n", 26), false);
-    getline(ss, args);
+    std::getline(ss, args);
     if (it->second.is_fd_in_channel(client_fd) == false)
         return (write(client_fd, "442 ERR_NOTONCHANNEL\n", 22), false);
     int add = -1;
@@ -42,8 +37,6 @@ bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
         if (modes[i] == 'o' || modes[i] == 'l' || modes[i] == 'k')
             nb_args++;
     }
-    // if (count_words(args) != nb_args)
-    //     return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false); //! a revoir pour le -
     std::stringstream arg_parsed(args);
     std::string arg;
     for (int i = 0; modes[i]; i++)

@@ -1,22 +1,22 @@
 #include "../includes/server.hpp"
 
-void print_ip(const struct addrinfo *ai)
-{
-    char ipstr[INET6_ADDRSTRLEN];
+// void print_ip(const struct addrinfo *ai)
+// {
+//     char ipstr[INET6_ADDRSTRLEN];
 
-    if (ai->ai_family == AF_INET)
-    {
-        struct sockaddr_in *ipv4 = (struct sockaddr_in *)ai->ai_addr;
-        inet_ntop(AF_INET, &ipv4->sin_addr, ipstr, sizeof(ipstr));
-        std::cout << "IPv4: " << ipstr << std::endl;
-    }
-    else if (ai->ai_family == AF_INET6)
-    {
-        struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)ai->ai_addr;
-        inet_ntop(AF_INET6, &ipv6->sin6_addr, ipstr, sizeof(ipstr));
-        std::cout << "IPv6: " << ipstr << std::endl;
-    }
-}
+//     if (ai->ai_family == AF_INET)
+//     {
+//         struct sockaddr_in *ipv4 = (struct sockaddr_in *)ai->ai_addr;
+//         inet_ntop(AF_INET, &ipv4->sin_addr, ipstr, sizeof(ipstr));
+//         std::cout << "IPv4: " << ipstr << std::endl;
+//     }
+//     else if (ai->ai_family == AF_INET6)
+//     {
+//         struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)ai->ai_addr;
+//         inet_ntop(AF_INET6, &ipv6->sin6_addr, ipstr, sizeof(ipstr));
+//         std::cout << "IPv6: " << ipstr << std::endl;
+//     }
+// }
 
 void setFds(struct pollfd *fds, int servfd)
 {
@@ -119,7 +119,7 @@ int main(int ac, char **av)
         return (write(2, "Error: socket creation failed\n", 30), 1);
     if (bind(servfd, serverDetails.getRes()->ai_addr, serverDetails.getRes()->ai_addrlen) < 0)
         return (write(2, "Error: bind failed\n", 19), 1);
-    print_ip(serverDetails.getRes());
+    // print_ip(serverDetails.getRes());
     if (listen(servfd, 10) < 0)
         return (write(2, "Error: listen failed\n", 21), 1);
     struct pollfd fds[MAX_CLIENTS + 1];
@@ -139,16 +139,33 @@ int main(int ac, char **av)
 }
 
 
-//todo 
-// - les COMMANDES : MODE, PART, INVITE, KICK, QUIT (+ //signaux)
+//todo list
+//! - JULES LA PTN De TOI PENSE A METTRE LES REPLY POUr CHAQUE CMD QUI en DEMANDENT
+// - les COMMANDES : KICK, QUIT (+ //signaux)
+// - Corriger toutes les notes //!
 // - penser a reset Client lorsque le fd se deco -> already registered
 // - gerer le cas : $> nc -C 127.0.0.1 6667
 //                   >com^Dman^Dd
 
-// - corriger msg d'err + msg 999 ERR avec bon code 
-// - changer parsing rajouter verif isdigit pour port par exemple et autre 
-// - couper fn privmsg en sous fonction pour gerer les #channels
+// - changer parsing rajouter verif isdigit pour port par exemple et autre =
 
 
 // - securiser chaque fn avec if si besoin + mettre des try si necessaire pour eviter des possibles bad_alloc et autre
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // - bonus: envoi de fichiers et bot

@@ -18,5 +18,5 @@ bool pass(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
     }
     else 
         return (write(client_fd, "464 ERR_PASSWDMISMATCH\n", 24), false); //? pas officiel selon la doc
-    return(is_client_welcome(huntrill, client_fd), true);
+    return(welcome_client(huntrill, client_fd), true);
 }

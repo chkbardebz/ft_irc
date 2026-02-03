@@ -1,36 +1,37 @@
 #include "../includes/server.hpp"
 
+// == CONSTRUCTORS =========================================================================================================
+
+//? UTILE std::map<int, Client> 
 Client::Client() : _nickname(NOT_INITIALIZED), _username(NOT_INITIALIZED), _realname(NOT_INITIALIZED), _status_nick(false), _status_user(false), _status_pass(false)
 {
 }
 
-Client::Client(std::string user, std::string nick, std::string realname) : _nickname(user), _username(nick), _realname(realname), _status_nick(false), _status_user(false), _status_pass(false)
+//? UTILE std::map
+Client::Client(const Client &src) : _nickname(src._nickname), _username(src._username), _realname(src._realname), _status_nick(src._status_nick), _status_user(src._status_user), _status_pass(src._status_pass)
 {
 }
 
-Client::Client(const Client &src)
-{
-    *this = src;
-}
-
+//? UTILE std::map
 Client &Client::operator=(const Client &copy)
 {
     if (this != &copy)
     {
-        this->_username = copy._username;
-        this->_nickname = copy._nickname;
-        this->_realname = copy._nickname;
-        this->_status_nick = copy._status_nick; //!
-        this->_status_user = copy._status_user; //!
-        this->_status_pass = copy._status_pass; //!
+        _nickname = copy._nickname;
+        _username = copy._username;
+        _realname = copy._realname;
+        _status_nick = copy._status_nick;
+        _status_user = copy._status_user;
+        _status_pass = copy._status_pass;
     }
     return (*this);
 }
 
 Client::~Client()
 {
-    // std::cout << "Client destructor called" << std::endl;
 }
+
+// == GETTERS =========================================================================================================
 
 std::string Client::getUser()
 {
@@ -64,6 +65,7 @@ bool Client::getStatusPass()
     return (_status_pass);
 }
 
+// == SETTERS =========================================================================================================
 
 void Client::setUser(std::string username)
 {

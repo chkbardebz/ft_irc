@@ -2,7 +2,6 @@
 
 Channel::Channel(std::string name) : _name(name), _topic(":No topic is set"), _chan_password(":No password is set"), _max_user(0), _is_invite_only(false), _is_topic_restricted(false), _is_chan_password(false), _is_user_limit(false)
 {
-
 }
 
 Channel::Channel(const Channel &copy)
@@ -10,7 +9,7 @@ Channel::Channel(const Channel &copy)
     *this = copy;
 }
 
-Channel &Channel::operator=(const Channel &src) //! rajouter chaque membre de client au fur et a mesure
+Channel &Channel::operator=(const Channel &src)
 {
     if (this != &src)
     {
@@ -38,7 +37,7 @@ const std::string &Channel::getName()
     return (_name);
 }
 
-std::set<int> Channel::getFds()
+const std::set<int>& Channel::getFds()
 {
     return (fds_channel);
 }
@@ -120,7 +119,7 @@ bool Channel::getInviteOnlyStatus()
     return (_is_invite_only);
 }
 
-void Channel::send_msg(std::string message, std::map<int, Client> &huntrill, int client_fd)
+void Channel::send_msg_to_channel(std::string message, std::map<int, Client> &huntrill, int client_fd)
 {
     std::map<int, Client>::iterator it_hunt = huntrill.find(client_fd);
     for (std::set<int>::iterator it = fds_channel.begin(); it != fds_channel.end(); it++)
@@ -131,14 +130,6 @@ void Channel::send_msg(std::string message, std::map<int, Client> &huntrill, int
         tmp = ":" + it_hunt->second.getNick() + "!" + it_hunt->second.getUser() + "@localhost " + "PRIVMSG " + _name + " " + message + '\n'; //! localhost ptetpas
         send(*it, tmp.c_str(), tmp.size(), 0);
     }
-}
-
-void Channel::send_msg_to_fd(std::map<int, Client> &huntrill, std::string cmd, std::string message, int receiver_fd, int sender_fd)
-{
-    std::map<int, Client>::iterator it_send = huntrill.find(sender_fd);
-    std::map<int, Client>::iterator it_receive = huntrill.find(receiver_fd);
-    std::string msg = ":" + it_send->second.getNick() + "!" + it_send->second.getUser() + "@localhost " + cmd + it_receive->second.getNick() + " " + message + '\n';
-    send(receiver_fd, msg.c_str(), msg.size(), 0);
 }
 
 void Channel::set_new_fd(int client_fd)

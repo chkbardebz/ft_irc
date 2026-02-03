@@ -7,7 +7,6 @@ bool invite(std::map<int, Client> &huntrill, int client_fd, char *line, Server &
 
     if (!(ss>>cmd>>nick>>channel))
         return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false);
-
     std::map<int, Client>::iterator it_hunt = huntrill.begin();
     for (;it_hunt != huntrill.end(); it_hunt++)
     {
@@ -25,9 +24,9 @@ bool invite(std::map<int, Client> &huntrill, int client_fd, char *line, Server &
             return (write(client_fd, "442 ERR_NOTONCHANNEL\n", 22), false);
         if (it_chan->second.is_fd_in_channel(it_hunt->first) == true && it_chan != serverDetails.makala.end())
             return (write(client_fd, "443 ERR_USERONCHANNEL\n", 23), false);
-        it_chan->second.invite_fd(it_hunt->first); // ret true
-        it_chan->second.send_msg_to_fd(huntrill, "INVITE ", channel, it_hunt->first, client_fd);
+        it_chan->second.invite_fd(it_hunt->first); //! ret true
+        send_msg_to_client(huntrill, client_fd, it_hunt->first, "INVITE ", channel);
     }
-    // else // fait rien lorsque le channel existe pas ?! mais ret true
+    //! else // fait rien lorsque le channel existe pas ?! mais ret true
     return (true);
 }

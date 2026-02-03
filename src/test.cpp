@@ -1,7 +1,16 @@
-#include "../includes/server.hpp"
+// void Channel::send_msg_to_channel(std::string message, std::map<int, Client> &huntrill, int client_fd)
+// {
+//     std::map<int, Client>::iterator it_hunt = huntrill.find(client_fd);
+//     for (std::set<int>::iterator it = fds_channel.begin(); it != fds_channel.end(); it++)
+//     {
+//         std::string tmp = "";
+//         if (client_fd == *it)
+//             continue;
+//         tmp = ":" + it_hunt->second.getNick() + "!" + it_hunt->second.getUser() + "@localhost " + "PRIVMSG " + _name + " " + message + '\n'; //! localhost ptetpas
+//         send(*it, tmp.c_str(), tmp.size(), 0);
+//     }
+// }
 
-//? 1/ cherche le channel correspondant passe en params
-//? 2/ envoi le msg a tous les client present dans le channel grace a send_msg()
 // bool send_msg_to_channel(Server &serverDetails, std::map<int, Client> &huntrill, int client_fd, std::string channel, std::string message)
 // {
 //     std::map<std::string, Channel>::iterator it_channel = serverDetails.makala.begin();
@@ -40,28 +49,3 @@
 //     }
 //     return (write(client_fd, "401 ERR_NOSUCHNICK\n", 20), false);
 // }
-
-bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line, Server &serverDetails)
-{
-    (void)serverDetails;
-    std::stringstream ss(line);
-    std::string cmd, dest, first, message;
-
-    if (is_client_set(huntrill, client_fd) == false)
-        return (write(client_fd, "451 ERR_NOTREGISTERED\n", 23), false);
-    ss >> cmd >> dest >> first; //! a mettre dans un if (!()) ??
-    std::getline(ss, message); //! verifie si echoue ?
-    if (dest[0] == '#') //! NOTONCHANNEL
-    {
-        return (send_msg_to_channel(serverDetails, huntrill, cmd, first + message, client_fd, dest), true);
-    }
-    if (dest[0] == ':')
-        return (write(client_fd, "411 ERR_NORECIPIENT\n", 20), false);
-    if (first.empty())
-        return (write(client_fd, "412 ERR_NOTEXTTOSEND\n", 21), false);
-    if (first[0] != ':' && first.size() >= 1)
-        return (write(client_fd, "407 ERR_TOOMANYTARGETS\n", 23), false);
-    if ((first[0] == ':'  && first.size() == 1) && is_full_of_space(message, 0) == true)
-        return (write(client_fd, "412 ERR_NOTEXTTOSEND\n", 21), false);
-    return (send_msg_to_client(huntrill, client_fd, nick_to_fd(huntrill, dest), cmd, first + message), true);
-}

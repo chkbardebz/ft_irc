@@ -1,16 +1,9 @@
 #include "../includes/server.hpp"
 
-#include <vector>
-
-
-bool fullisspace2(std::string str, size_t i)
+void clear_channels_splited(std::vector<std::string> &channels_splited)
 {
-    for(; str[i]; i++)
-    {
-        if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n' && str[i] != '\r')
-            return (false);
-    }
-    return (true);
+    channels_splited.clear(); //? supprime tous les elements
+    std::vector<std::string>().swap(channels_splited); //? libère la memoire allouee par le vector grace a un vector temporaire vide
 }
 
 std::vector<std::string> split_channel_s(std::string channel_s, char delim)
@@ -24,12 +17,6 @@ std::vector<std::string> split_channel_s(std::string channel_s, char delim)
     }
     result.push_back(channel_s.substr(start));
     return (result);
-}
-
-void clear_channels_splited(std::vector<std::string> &channels_splited)
-{
-    channels_splited.clear(); //? supprime tous les elements
-    std::vector<std::string>().swap(channels_splited); //? libère la memoire allouee par le vector grace a un vector temporaire vide
 }
 
 //? tous les chemins de channels doivent etre essayes mm si un (plus tot) renvoi un msg d'erreur.
@@ -80,7 +67,7 @@ bool part(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
             continue ;
         }
         // VERIFIE S'IL Y A UN MSG A ENVOYR (FALCULTATIF)
-        if (send_msg_to_channel(serverDetails, huntrill, client_fd, *channels_splited_it, message) == false) //renvoi deja un msg d'err s'il faut
+        if (send_msg_to_channel(serverDetails, huntrill, "PART", message, client_fd, *channels_splited_it) == false) //renvoi deja un msg d'err s'il faut
             continue ;
         // FAIRE QUITTER LE CLIENT DU SERVER
         channel_details->second.client_quit_channel(client_fd);
@@ -90,6 +77,39 @@ bool part(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
     }
     return (clear_channels_splited(channels_splited), true);
 }
+
+
+
+//! rajouter ces erreur gere ici 
+
+// bool send_msg_to_channel(Server &serverDetails, std::map<int, Client> &huntrill, int client_fd, std::string channel, std::string message)
+// {
+//     std::map<std::string, Channel>::iterator it_channel = serverDetails.makala.begin();
+//     for (; it_channel != serverDetails.makala.end() ; it_channel++)
+//     {
+//         if (strcmp(it_channel->first.c_str(), channel.c_str()) == 0)
+//         {
+//             if (it_channel->second.is_fd_in_channel(client_fd) == false)
+//                 return (write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23), false); //? client hors du chann
+//             it_channel->second.send_msg_to_channel(message, huntrill, client_fd);
+//             return (true);
+//         }
+//     }
+//     return (write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23), false);
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //! BEFORE CHANGEMENT DE LOGIQUE AVEC LE ':'
 //! ':' n'indique pas le debut du reason/message MAIS precise uniquement si il y a des espaces dans celui-ci

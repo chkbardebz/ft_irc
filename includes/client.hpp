@@ -1,9 +1,6 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-# include <iostream>
-# include <string>
-
 # include "server.hpp"
 
 # define NOT_INITIALIZED "\0"
@@ -21,9 +18,8 @@ class Client
     public :   
     // == CANON ================================================================================================
         Client();
-        ~Client(); 
-        Client(std::string nick, std::string user, std::string realname);
         Client(const Client &src);
+        ~Client(); 
         Client &operator=(const Client &copy);
     // == SETTERS ================================================================================================
         void setUser(std::string username); 
