@@ -60,8 +60,6 @@ bool part(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
 bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails);
 bool invite(std::map<int, Client> &huntrill, int client_fd, char *line, Server &serverDetails);
 
-bool send_msg_to_channel(Server &serverDetails, std::map<int, Client> &huntrill, int client_fd, std::string channel, std::string message);
-
 
 // == irc_utils.cpp ==================================================================================================================================================
 bool is_valid_char( const std::string str, int i );
@@ -72,9 +70,9 @@ void welcome_client(std::map<int, Client> &huntrill, int client_fd);
 
 // void send_msg_to_client_with_fd(std::map<int, Client> &huntrill, std::string cmd, std::string message, int receiver_fd, int sender_fd);
 
-//todo test
 bool send_msg_to_channel(Server &serverClient, std::map<int, Client> &huntrill, std::string cmd, std::string message, int sender_fd, std::string channel);
 bool send_msg_to_client(std::map<int, Client> &huntrill, int sender_fd, int receiver_fd, std::string cmd, std::string message);
+bool send_cmd_broadcast(Server &serverDetails, std::map<int, Client> &huntrill, std::string cmd, std::string message, int sender_fd, std::string channel);
 int nick_to_fd(std::map<int, Client> &huntrill, std::string nick);
 
 #endif

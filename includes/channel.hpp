@@ -5,6 +5,8 @@
 #include <set>
 #include <map>
 
+# define NO_TOPIC ":No topic is set"
+
 class Client;
 
 class Channel
