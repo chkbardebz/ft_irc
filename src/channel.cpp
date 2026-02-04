@@ -162,7 +162,7 @@ bool Channel::client_quit_channel(int client_fd)
         if (*it == client_fd)
         {
             fds_op.erase(it);
-            return (true);
+            break ;
         }
     }
     // supprime l'utilisateur des clients

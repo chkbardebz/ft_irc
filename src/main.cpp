@@ -52,11 +52,10 @@ void acceptNewConnexion(std::map<int, Client>& huntrill, struct pollfd *fds, int
     }
 }
 
-
 void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds, Server &serverDetails)
 {
-    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails) = {&nick, &user, &privmsg, &pass, &join, &topic, &part, &invite, &mode};
-    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG", "PASS", "JOIN", "TOPIC", "PART", "INVITE", "MODE"};
+    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails) = {&nick, &user, &privmsg, &pass, &join, &topic, &part, &invite, &mode, &kick};
+    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG", "PASS", "JOIN", "TOPIC", "PART", "INVITE", "MODE", "KICK"};
 
     for (int i = 1; i <= MAX_CLIENTS; i++) //? RECOIT LES MESSAGES ET LES REDISTRIBUE PARMIS TOUS LES CLIENTS
     {
@@ -75,12 +74,20 @@ void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds, Serve
                 huntrill.erase(fds[i].fd);
                 close(fds[i].fd); 
                 fds[i].fd = -1; //? Reset le fd au status "inutilise"
+                continue ;
             }
-            for (size_t j = 0; j < 9 ; j++)
+            bool valid_cmd = false;
+            for (size_t j = 0; j < 10 ; j++)
             {
                 if (std::strcmp(cmd.c_str(), cmd_names[j].c_str()) == 0)
+                {
+                    valid_cmd = true;
                     funcs[j](huntrill, fds[i].fd, line_buf, serverDetails); //je n'appel pas un ptr sur "fn libre" mais sur des methodes membres de la classe intern d'ou l'utilisation de this->
+                    break;
+                }
             }
+            if (!valid_cmd && !cmd.empty())
+                send_err_msg(huntrill, fds[i].fd, 421, cmd,":Unknown command"); //ERR_UNKNOWNCOMMAND
         }
     }
 }
@@ -141,8 +148,13 @@ int main(int ac, char **av)
 
 //todo list
 //! - JULES LA PTN De TOI PENSE A METTRE LES REPLY POUr CHAQUE CMD QUI en DEMANDENT
-// - les COMMANDES : KICK, QUIT (+ //signaux)
-// - Corriger toutes les notes //!
+// - les COMMANDES : KICK, QUIT (+ //signaux + Corriger toutes les notes /! + 
+
+// - verifier si PART n'est pas casse depuis le changement de logique pour send (PART dependait de certains msg d'err de l'ancienne fn send)
+// - rajouter les secu d'entrer si bien log pour ttes les cmd post identification
+
+// - rajouter une verif pour lire les messages dans PRIVMSG qu'a partir du ":"
+
 // - penser a reset Client lorsque le fd se deco -> already registered
 // - gerer le cas : $> nc -C 127.0.0.1 6667
 //                   >com^Dman^Dd
