@@ -5,7 +5,7 @@ bool user(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
     (void)serverDetails;
     std::map<int, Client>::iterator it = huntrill.find(client_fd);
     if (it->second.getStatusUser() == true)
-        return (write(client_fd, "462 ERR_ALREADYREGISTRED\n", 26), false);
+        return (write(client_fd, "462 ERR_ALREADYREGISETRED\n", 27), false);
     std::stringstream ss(line);
     std::string cmd, username, hostname, servname, realname;
     if (!(ss >> cmd >> username >> hostname >> servname))

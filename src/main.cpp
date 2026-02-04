@@ -68,8 +68,7 @@ void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds, Serve
             std::string cmd;
             ss >> cmd;
             if (n <= 0) //? FERME LE FD CORRESPONDANT AU CLIENT QUI SE DECONNECTE 
-            { 
-
+            {
                 //! a mettre dans la fonction quit propre a faire
                 huntrill.erase(fds[i].fd);
                 close(fds[i].fd); 
@@ -119,6 +118,8 @@ int main(int ac, char **av)
 {
     if (ac != 3)
         return(write(2, "Usage: ./ircserv <port> <password>\n", 36), 1);
+    if (is_valid_port(av[1]) == false)
+        return (write(2, "Error: Port must be numeric\n", 29), 1);
     Server serverDetails;
     serverDetails.setPass(std::string(av[2]));
     int servfd = setSocketServer(serverDetails, av[1]);
@@ -147,24 +148,15 @@ int main(int ac, char **av)
 
 
 //todo list
-//! - JULES LA PTN De TOI PENSE A METTRE LES REPLY POUr CHAQUE CMD QUI en DEMANDENT
-// - les COMMANDES : KICK, QUIT (+ //signaux + Corriger toutes les notes /! + 
-
-// - verifier si PART n'est pas casse depuis le changement de logique pour send (PART dependait de certains msg d'err de l'ancienne fn send)
-// - rajouter les secu d'entrer si bien log pour ttes les cmd post identification
-
-// - rajouter une verif pour lire les messages dans PRIVMSG qu'a partir du ":"
-
-// - penser a reset Client lorsque le fd se deco -> already registered
-// - gerer le cas : $> nc -C 127.0.0.1 6667
-//                   >com^Dman^Dd
-
-// - changer parsing rajouter verif isdigit pour port par exemple et autre =
-
-
+// - les COMMANDES : QUIT (+ //signaux + Corriger toutes les notes /! + remplacer write par send_err_msg() + // reset client pour liberer la memoire et empecher la reutilisation si client se reco) 
 // - securiser chaque fn avec if si besoin + mettre des try si necessaire pour eviter des possibles bad_alloc et autre
 
 
+// - free PARTOUT + shutdown le serv
+
+// - limite pour reason dans send_err_msg() (et line partout ??) pour gerer les overflows
+
+// - rajouter une verif pour lire les messages dans PRIVMSG qu'a partir du ":"
 
 
 
@@ -172,12 +164,7 @@ int main(int ac, char **av)
 
 
 
-
-
-
-
-
-
-
+// - gerer le cas a la con : $> nc -C 127.0.0.1 6667
+//                   >com^Dman^Dd
 
 // - bonus: envoi de fichiers et bot

@@ -9,6 +9,9 @@
 
 bool kick(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails)
 {
+    if (is_already_registered(huntrill, client_fd) == false)
+        return (false);
+
     std::stringstream ss(line);
     std::string cmd, channel_unsplited, user_unsplited, message = "";
     bool message_printable = false;

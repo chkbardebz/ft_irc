@@ -62,6 +62,7 @@ bool invite(std::map<int, Client> &huntrill, int client_fd, char *line, Server &
 bool kick(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails);
 
 // == irc_utils.cpp ==================================================================================================================================================
+bool is_valid_port(char* str);
 bool is_valid_char( const std::string str, int i );
 bool is_full_of_space(std::string str, size_t i);
 void ft_putstr_fd(const char *str, int fd);
@@ -77,5 +78,9 @@ bool send_msg_to_channel(Server &serverClient, std::map<int, Client> &huntrill, 
 bool send_msg_to_client(std::map<int, Client> &huntrill, int sender_fd, int receiver_fd, std::string cmd, std::string message);
 bool send_cmd_broadcast(Server &serverDetails, std::map<int, Client> &huntrill, std::string cmd, std::string message, int sender_fd, std::string channel);
 int nick_to_fd(std::map<int, Client> &huntrill, std::string nick);
+
+
+
+bool is_already_registered(std::map<int, Client> &huntrill, int client_fd);
 
 #endif
