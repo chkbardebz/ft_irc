@@ -4,7 +4,7 @@
 bool topic(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails)
 {
     std::stringstream ss(line);
-    std::string cmd, channel, topic;
+    std::string cmd, channel, topic, topicString;
 
     if (!(ss >> cmd >> channel))
         return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false);
@@ -15,12 +15,25 @@ bool topic(std::map<int, Client> &huntrill, int client_fd, char* line, Server &s
     if (topic.empty() || is_full_of_space(topic, 0))
     {
         std::map<int,Client>::iterator it_hunt = huntrill.find(client_fd);
-        std::string topicString = "331 " + it_hunt->second.getNick() + " " + channel + it->second.getTopic() + "\n";
+        if (it->second.getTopic() == NO_TOPIC)
+            topicString = ":ircserv.local 331 " + it_hunt->second.getNick() + " " + channel + " " + it->second.getTopic() + "\n"; //? RPL_NOTOPIC
+        else
+            topicString = ":ircserv.local 332 " + it_hunt->second.getNick() + " " + channel + " " + it->second.getTopic() + "\n"; //? RPL_TOPIC
         send(client_fd, topicString.c_str(), topicString.size(), 0);
         return (true);
     }
     if (it->second.is_fd_op(client_fd) == false && it->second.getTopicStatus() == true)
         return (write(client_fd, "482 ERR_CHANOPRIVSNEEDED\n", 26), false);
-    it->second.setTopic(topic);
+    std::stringstream arg_parsed(topic);
+    std::string first, rest;
+    arg_parsed>>first;
+    getline(arg_parsed, rest);
+    if (first == ":" && (rest.empty() || is_full_of_space(rest, 0) == true))
+    {
+        it->second.setTopic(NO_TOPIC);
+        return (true);
+    }
+    it->second.setTopic(first + rest);
+    send_msg_to_channel(serverDetails, huntrill, "TOPIC", first + rest, client_fd, it->first);
     return (true);
 }

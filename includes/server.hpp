@@ -71,8 +71,11 @@ std::vector<std::string> ft_sukuna(std::string channel_s, char delim);
 void clear_vector_sukuned(std::vector<std::string> &channels_splited);
 
 void send_err_msg(std::map<int, Client> &huntrill, int client_fd, int type_err, std::string reason, std::string message);
+// void send_msg_to_client_with_fd(std::map<int, Client> &huntrill, std::string cmd, std::string message, int receiver_fd, int sender_fd);
+
 bool send_msg_to_channel(Server &serverClient, std::map<int, Client> &huntrill, std::string cmd, std::string message, int sender_fd, std::string channel);
 bool send_msg_to_client(std::map<int, Client> &huntrill, int sender_fd, int receiver_fd, std::string cmd, std::string message);
+bool send_cmd_broadcast(Server &serverDetails, std::map<int, Client> &huntrill, std::string cmd, std::string message, int sender_fd, std::string channel);
 int nick_to_fd(std::map<int, Client> &huntrill, std::string nick);
 
 #endif

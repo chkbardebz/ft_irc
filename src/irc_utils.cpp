@@ -71,6 +71,7 @@ void send_err_msg(std::map<int, Client> &huntrill, int client_fd, int type_err, 
     send(client_fd, msg.c_str(), msg.size(), 0);
 }
 
+
 bool send_msg_to_channel(Server &serverDetails, std::map<int, Client> &huntrill, std::string cmd, std::string message, int sender_fd, std::string channel)
 {
     std::map<std::string, Channel>::iterator it = serverDetails.makala.find(channel);
@@ -101,6 +102,19 @@ bool send_msg_to_client(std::map<int, Client> &huntrill, int sender_fd, int rece
     return (true);
 }
 
+bool send_cmd_broadcast(Server &serverDetails, std::map<int, Client> &huntrill, std::string cmd, std::string message, int sender_fd, std::string channel)
+{
+    std::map<std::string, Channel>::iterator it = serverDetails.makala.find(channel);
+    std::set<int>::iterator receiver_fd = it->second.getFds().begin();
+    std::map<int, Client>::iterator it_sender = huntrill.find(sender_fd);
+
+    for (; receiver_fd != it->second.getFds().end(); receiver_fd++)
+    {
+        std::string msg = ":" + it_sender->second.getNick() + "!" + it_sender->second.getUser() + "@localhost " + cmd + " " + channel + " " + message + '\n';
+        send(*receiver_fd, msg.c_str(), msg.size(), 0);
+    }
+    return (true);
+}
 
 int nick_to_fd(std::map<int, Client> &huntrill, std::string nick)
 {

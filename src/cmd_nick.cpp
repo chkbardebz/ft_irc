@@ -26,9 +26,12 @@ bool nick(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
     if (std::isdigit(nickname[0]) || !is_valid_char(nickname, 1) || nickname.size() > 9) // err: first elem isdigit
         return (write(client_fd, "432 ERR_ERRONEUSNICKNAME\n", 26), false);
     if (it != huntrill.end())  // Vérifier que le client existe
-    {
+    {   
         it->second.setNick(nickname);
+        if (it->second.getStatusNick() == false)
+            welcome_client(huntrill, client_fd);
         it->second.setStatusNIck(true);
+        return (true);
     }
-    return(welcome_client(huntrill, client_fd), true);
+    return(false);
 }

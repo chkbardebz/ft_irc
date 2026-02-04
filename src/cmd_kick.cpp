@@ -1,18 +1,5 @@
 #include "../includes/server.hpp" 
 
-// 1. Vérifier que le canal existe
-// 2. Vérifier que le kicker est dans le canal
-// 3. Vérifier que le kicker est opérateur
-// 4. Vérifier que la cible existe
-// 5. Vérifier que la cible est dans le canal
-// 6. Retirer la cible du channel
-// 7. Broadcast le message KICK
-
-// KICK #chan,#chan user1,user2 :bye
-
-// aucune err envoyer si nbr de channel et de user est different, le dernier elem est juste ignore 
-
-
 // ERR POSSIBLE :
 //? => pas op pour kick => 482 ERR_CHANOPRIVSNEEDED ==> client_fd recoit => ":server 482 <nick> #chan :You're not channel operator"
 //? => channel inexistant => 403 ERR_NOSUCHCHANNEL
@@ -20,14 +7,6 @@
 //? => user pas dans le canal => 441 ERR_USERNOTINCHANNEL
 //? => le kicker n'est pas dans le bon canal => 442 ERR_NOTONCHANNEL
 
-// => le kicker peut se kicker lui meme et renvoi donc => :<nick> KICK #chan user
-
-// QUAND CA FONCTIONNE :
-// envoyer un msg a tous les membres du channel et a la personne kicke PUIS le kick
-// :<kicker> KICK <channel> <kicked> :<comment> (mm synthaxe que nos fn send())
-
-
-//? mm logique que PART
 bool kick(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails)
 {
     std::stringstream ss(line);

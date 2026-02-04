@@ -15,13 +15,48 @@ int count_words(const std::string& str)
     return count;
 }
 
+bool get_channel_mode(Server &serverDetails, std::map<int, Client> &huntrill, int client_fd, std::string channel)
+{
+    std::stringstream args;
+    std::string modes;
+    std::map<std::string, Channel>::iterator it_chan = serverDetails.makala.find(channel);
+
+    if (it_chan == serverDetails.makala.end())
+        return (write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23), false); // return ?
+    if (it_chan->second.is_fd_op(client_fd) == false)
+        return (write(client_fd, "482 ERR_CHANOPRIVSNEEDED\n", 26), false);
+    std::map<int,Client>::iterator it_client = huntrill.find(client_fd);
+    modes = " +";
+    if (it_chan->second.getTopicStatus() == true)
+        modes += "t";
+    if (it_chan->second.getInviteOnlyStatus() == true)
+        modes += "i";
+    if (it_chan->second.getPasswordStatus() == true)
+    {
+        modes += "k";
+        args << it_chan->second.getChanPassword() + " ";
+    }
+    if (it_chan->second.getUserLimitStatus() == true)
+    {
+        modes += "l";
+        args << it_chan->second.getUserLimit();
+    }
+    std::string str = ":ircserv.local 324 " + it_client->second.getNick() + " " + channel + modes + " " + args.str() + "\r\n";
+    send(client_fd, str.c_str(), str.size(), 0);
+    return (true);
+}
+
 bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails)
 {
     std::stringstream ss(line);
     std::string cmd, channel, modes, args;
 
     if (!(ss>>cmd>>channel>>modes))
-        return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false);
+    {
+        if (channel.empty())
+            return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false);
+        return (get_channel_mode(serverDetails, huntrill, client_fd, channel));
+    }
     std::map<std::string, Channel>::iterator it = serverDetails.makala.find(channel);
     if (it == serverDetails.makala.end())
         return (write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23), false);
@@ -62,28 +97,29 @@ bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
             arg_parsed>>arg;
             if (arg.empty())
                 return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false);
-            for (std::map<int, Client>::iterator it_hunt = huntrill.begin(); it_hunt != huntrill.end(); it_hunt++)
+            std::map<int, Client>::iterator it_hunt = huntrill.begin();
+            for (; it_hunt != huntrill.end(); it_hunt++)
             {
                 if (it->second.is_fd_in_channel(it_hunt->first) == true && strcmp(it_hunt->second.getNick().c_str(), arg.c_str()) == 0)
                 {
                     if (it->second.is_fd_op(it_hunt->first) == true && add == true)
-                        return (true);
+                        break;
                     if (it->second.is_fd_op(it_hunt->first) == false && add == false)
-                        return (true);
+                        break;
                     if (it->second.is_fd_op(it_hunt->first) == true && add == false)
                     {
                         it->second.removeOp(it_hunt->first);
-                        return (true);
+                        break;
                     }
                     else
                     {
                         it->second.setOp(it_hunt->first);
-                        return (true);
+                        break;
                     }
                 }
-                // else 
-                //     return (write(client_fd, "441 ERR_USERNOTINCHANNEL\n", 26), false);
             }
+            if (it_hunt == huntrill.end())
+                return (write(client_fd, "441 ERR_USERNOTINCHANNEL\n", 26), false);
         }
         if (modes[i] == 'l') // l MAXCLIENTLIMIT
         {
@@ -93,5 +129,5 @@ bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
             it->second.setMode('l', add, arg.c_str());
         }
     }
-    return (write(client_fd, "jsp\n", 5), true);
+    return (send_cmd_broadcast(serverDetails, huntrill, "MODE", modes + arg_parsed.str(), client_fd, it->first), true);
 }
