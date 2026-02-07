@@ -2,5 +2,5 @@
 
 void handle_sigint(int sig)
 {
-
+    (void)sig;
 }
