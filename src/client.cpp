@@ -94,3 +94,14 @@ void Client::setStatusPass(bool new_status)
 {
     _status_pass = new_status;
 }
+
+void Client::resetClient()
+{
+    setUser(NOT_INITIALIZED);
+    setNick(NOT_INITIALIZED);
+    setReal(NOT_INITIALIZED);
+
+    setStatusNIck(false);
+    setStatusUser(false);
+    setStatusPass(false);
+}

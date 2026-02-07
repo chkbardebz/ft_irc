@@ -10,6 +10,7 @@
 # include <unistd.h>
 # include <poll.h>
 # include <stdlib.h>
+# include <signal.h>
 
 # include <map>
 # include "client.hpp"
@@ -60,6 +61,7 @@ bool part(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
 bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails);
 bool invite(std::map<int, Client> &huntrill, int client_fd, char *line, Server &serverDetails);
 bool kick(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails);
+bool quit(std::map<int, Client> &huntrill, int client_fd, char *line, Server &serverDetails);
 
 // == irc_utils.cpp ==================================================================================================================================================
 bool is_valid_char( const std::string str, int i );
@@ -67,8 +69,8 @@ bool is_full_of_space(std::string str, size_t i);
 void ft_putstr_fd(const char *str, int fd);
 bool is_client_set(std::map<int, Client> &huntrill, int client_fd);
 void welcome_client(std::map<int, Client> &huntrill, int client_fd);
-std::vector<std::string> ft_sukuna(std::string channel_s, char delim);
-void clear_vector_sukuned(std::vector<std::string> &channels_splited);
+std::vector<std::string> ft_sukuna(std::string channel_s, char delim); //! vaffanculo
+void clear_vector_sukuned(std::vector<std::string> &channels_splited); //! vaffanculo
 
 void send_err_msg(std::map<int, Client> &huntrill, int client_fd, int type_err, std::string reason, std::string message);
 // void send_msg_to_client_with_fd(std::map<int, Client> &huntrill, std::string cmd, std::string message, int receiver_fd, int sender_fd);
@@ -77,5 +79,7 @@ bool send_msg_to_channel(Server &serverClient, std::map<int, Client> &huntrill, 
 bool send_msg_to_client(std::map<int, Client> &huntrill, int sender_fd, int receiver_fd, std::string cmd, std::string message);
 bool send_cmd_broadcast(Server &serverDetails, std::map<int, Client> &huntrill, std::string cmd, std::string message, int sender_fd, std::string channel);
 int nick_to_fd(std::map<int, Client> &huntrill, std::string nick);
+
+void handle_sigint(int sig);
 
 #endif

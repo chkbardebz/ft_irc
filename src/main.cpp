@@ -31,12 +31,12 @@ void acceptNewConnexion(std::map<int, Client>& huntrill, struct pollfd *fds, int
     int i = 1;
     if (fds[0].revents & POLLIN) //? ACCEPTE LES CONNEXIONS ENTRANTES //? fds[0] ==> monitor 
     {
-        int new_client_fd = accept(servfd, NULL, NULL);
+        int new_client_fd = accept(servfd, NULL, NULL); //! == open()
         while (i <= MAX_CLIENTS)
         {
             if (fds[i].fd == -1)
             {
-                fds[i].fd = new_client_fd;
+                fds[i].fd = new_client_fd; //! Deux trucs a close() ???
                 fds[i].events = POLLIN;
                 Client new_client_class; //? default constructor
                 huntrill.insert(std::make_pair(new_client_fd, new_client_class));
@@ -54,35 +54,42 @@ void acceptNewConnexion(std::map<int, Client>& huntrill, struct pollfd *fds, int
 
 void AcceptNewCommand(std::map<int, Client>& huntrill, struct pollfd *fds, Server &serverDetails)
 {
-    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails) = {&nick, &user, &privmsg, &pass, &join, &topic, &part, &invite, &mode, &kick};
-    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG", "PASS", "JOIN", "TOPIC", "PART", "INVITE", "MODE", "KICK"};
+    bool (*funcs[])(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails) = {&nick, &user, &privmsg, &pass, &join, &topic, &part, &invite, &mode, &kick, &quit};
+    std::string cmd_names[] = {"NICK", "USER", "PRIVMSG", "PASS", "JOIN", "TOPIC", "PART", "INVITE", "MODE", "KICK", "QUIT"};
 
     for (int i = 1; i <= MAX_CLIENTS; i++) //? RECOIT LES MESSAGES ET LES REDISTRIBUE PARMIS TOUS LES CLIENTS
     {
         if (fds[i].fd != -1 && (fds[i].revents & POLLIN))
         {
             char line_buf[1024];
-            ssize_t n = recv(fds[i].fd, line_buf, sizeof(line_buf), 0);
-            line_buf[n] = '\0';
-            std::stringstream ss(line_buf);
-            std::string cmd;
-            ss >> cmd;
+            ssize_t n = recv(fds[i].fd, line_buf, sizeof(line_buf) - 1, 0);
             if (n <= 0) //? FERME LE FD CORRESPONDANT AU CLIENT QUI SE DECONNECTE 
             { 
-
                 //! a mettre dans la fonction quit propre a faire
-                huntrill.erase(fds[i].fd);
+                funcs[10](huntrill, fds[i].fd, (char *)"QUIT :Connection Interupted", serverDetails); //? Deconnection impromptue
+                // huntrill.erase(fds[i].fd); //! deja fait dans QUIT
                 close(fds[i].fd); 
                 fds[i].fd = -1; //? Reset le fd au status "inutilise"
                 continue ;
             }
+            line_buf[n] = '\0';
+            std::stringstream ss(line_buf);
+            std::string cmd;
+            ss >> cmd;
+
             bool valid_cmd = false;
-            for (size_t j = 0; j < 10 ; j++)
+            for (size_t j = 0; j < 11 ; j++)
             {
                 if (std::strcmp(cmd.c_str(), cmd_names[j].c_str()) == 0)
                 {
                     valid_cmd = true;
                     funcs[j](huntrill, fds[i].fd, line_buf, serverDetails); //je n'appel pas un ptr sur "fn libre" mais sur des methodes membres de la classe intern d'ou l'utilisation de this->
+                    
+                    if (cmd == "QUIT")
+                    {
+                        close(fds[i].fd);
+                        fds[i].fd = -1;
+                    }
                     break;
                 }
             }
@@ -119,8 +126,15 @@ int main(int ac, char **av)
 {
     if (ac != 3)
         return(write(2, "Usage: ./ircserv <port> <password>\n", 36), 1);
+
     Server serverDetails;
     serverDetails.setPass(std::string(av[2]));
+
+    // struct sigaction sig; //! ptet besoin de passer serverDetails (et huntrill???) en global
+    // memset(&sig, 0, sizeof(sig)); //! Horrible a gerer jsuis terrifie
+    // sig.                           //! g peur
+    // sig.sa_handler = handle_sigint; //! a l'aide
+
     int servfd = setSocketServer(serverDetails, av[1]);
     if (servfd < 0)
         return (write(2, "Error: socket creation failed\n", 30), 1);

@@ -21,7 +21,9 @@ SRCS 		=	src/main.cpp \
 				src/cmd_mode.cpp \
 				src/cmd_invite.cpp \
 				src/cmd_kick.cpp \
+				src/cmd_quit.cpp \
 				src/irc_utils.cpp \
+				src/signal.cpp
 
 OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 

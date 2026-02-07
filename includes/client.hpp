@@ -26,7 +26,7 @@ class Client
         void setNick(std::string nickname);
         void setReal(std::string realname);
 
-        void setStatusNIck(bool new_status); 
+        void setStatusNIck(bool new_status); //! I majuscule
         void setStatusUser(bool new_status);
         void setStatusPass(bool new_status);
 
@@ -38,6 +38,10 @@ class Client
         bool getStatusNick();
         bool getStatusUser(); 
         bool getStatusPass();
+
+    // == CLEANUP ================================================================================================
+
+        void resetClient();
 };
 
 #endif
