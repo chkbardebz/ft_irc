@@ -43,7 +43,9 @@
 
 bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line, Server &serverDetails)
 {
-    (void)serverDetails;
+    if (is_already_registered(huntrill, client_fd) == false)
+        return (false);
+
     std::stringstream ss(line);
     std::string cmd, dest, first, message;
 
@@ -51,10 +53,8 @@ bool privmsg(std::map<int, Client> &huntrill, int client_fd, char *line, Server 
         return (write(client_fd, "451 ERR_NOTREGISTERED\n", 23), false);
     ss >> cmd >> dest >> first; //! a mettre dans un if (!()) ??
     std::getline(ss, message); //! verifie si echoue ?
-    if (dest[0] == '#') //! NOTONCHANNEL
-    {
+    if (dest[0] == '#')
         return (send_msg_to_channel(serverDetails, huntrill, cmd, first + message, client_fd, dest), true);
-    }
     if (dest[0] == ':')
         return (write(client_fd, "411 ERR_NORECIPIENT\n", 20), false);
     if (first.empty())

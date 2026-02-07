@@ -49,3 +49,7 @@ bool quit(std::map<int, Client> &huntrill, int client_fd, char *line, Server &se
 
     return (true);
 }
+// SI LE CLIENT QUITTE BRUTALEMENT (ordi s'eteint, ctrl-C etc.)
+// QUIT :Ping timeout
+// QUIT :Read error
+

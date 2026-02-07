@@ -30,7 +30,9 @@ void name_reply(Server &serverDetails, std::map<int, Client> &huntrill, int clie
 
 bool join(std::map<int ,Client> &huntrill, int client_fd, char *line, Server &serverDetails)
 {
-    (void)huntrill;
+    if (is_already_registered(huntrill, client_fd) == false)
+        return (false);
+        
     std::stringstream ss(line);
     std::string cmd, name, passwd;
 

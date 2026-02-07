@@ -1,5 +1,15 @@
 #include "../includes/server.hpp"
 
+bool is_valid_port(char* str)
+{
+    for (size_t i = 0 ; str[i] ; i++)
+    {
+        if (std::isdigit(str[i]) == false)
+            return (false);
+    }
+    return (true);
+}
+
 bool is_valid_char( const std::string str, int i )
 {
     for (; str[i] ; i++)
@@ -65,12 +75,11 @@ void send_err_msg(std::map<int, Client> &huntrill, int client_fd, int type_err, 
     std::string type_err_s = oss.str();
     std::map<int, Client>::iterator it = huntrill.find(client_fd);
     if (reason == NOT_INITIALIZED)
-        msg = ":ft_irc " + type_err_s + ' ' + it->second.getNick() + ' ' + message + '\n';
+        msg = ":ircserv.local " + type_err_s + ' ' + it->second.getNick() + ' ' + message + '\n';
     else
-        msg = ":ft_irc " + type_err_s + ' ' + it->second.getNick() + ' ' + reason + ' ' + message + '\n';
+        msg = ":ircserv.local " + type_err_s + ' ' + it->second.getNick() + ' ' + reason + ' ' + message + '\n';
     send(client_fd, msg.c_str(), msg.size(), 0);
 }
-
 
 bool send_msg_to_channel(Server &serverDetails, std::map<int, Client> &huntrill, std::string cmd, std::string message, int sender_fd, std::string channel)
 {
@@ -146,4 +155,22 @@ void clear_vector_sukuned(std::vector<std::string> &channels_splited)
 {
     channels_splited.clear(); //? supprime tous les elements
     std::vector<std::string>().swap(channels_splited); //? libère la memoire allouee par le vector grace a un vector temporaire vide
+}
+
+
+// =====================================
+
+bool is_already_registered(std::map<int, Client> &huntrill, int client_fd)
+{
+    std::string msg;
+    std::map<int, Client>::iterator it = huntrill.find(client_fd);
+
+    if (it->second.getStatusNick() == true && it->second.getStatusPass() == true && it->second.getStatusUser() == true)
+        return(true);
+    if (it->second.getStatusNick() == false)
+        msg = ":ircserv.local 451 <nickname> :You have not registered\n";
+    else
+        msg = ":ircserv.local 451 " + it->second.getNick() + " :You have not registered\n";
+    send(client_fd, msg.c_str(), msg.size(), 0);
+    return(false);
 }
