@@ -8,6 +8,7 @@
 # define NO_TOPIC ":No topic is set"
 
 class Client;
+class Server;
 
 class Channel
 {
@@ -63,9 +64,6 @@ public :
     bool is_fd_invited(int client_fd);
     void invite_fd(int fd_invited);
     void remove_invited(int client_fd);
-
-    void send_msg_to_channel(std::string message, std::map<int, Client> &huntrill, int client_fd);
-
 };
 
 #endif

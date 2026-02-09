@@ -119,19 +119,6 @@ bool Channel::getInviteOnlyStatus()
     return (_is_invite_only);
 }
 
-void Channel::send_msg_to_channel(std::string message, std::map<int, Client> &huntrill, int client_fd)
-{
-    std::map<int, Client>::iterator it_hunt = huntrill.find(client_fd);
-    for (std::set<int>::iterator it = fds_channel.begin(); it != fds_channel.end(); it++)
-    {
-        std::string tmp = "";
-        if (client_fd == *it)
-            continue;
-        tmp = ":" + it_hunt->second.getNick() + "!" + it_hunt->second.getUser() + "@localhost " + "PRIVMSG " + _name + " " + message + '\n'; //! localhost ptetpas
-        send(*it, tmp.c_str(), tmp.size(), 0);
-    }
-}
-
 void Channel::set_new_fd(int client_fd)
 {
     if (getSize() == 0)

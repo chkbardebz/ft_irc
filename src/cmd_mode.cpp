@@ -15,17 +15,17 @@ int count_words(const std::string& str)
     return count;
 }
 
-bool get_channel_mode(Server &serverDetails, std::map<int, Client> &huntrill, int client_fd, std::string channel)
+bool get_channel_mode(Server &serverDetails, int client_fd, std::string channel)
 {
     std::stringstream args;
     std::string modes;
     std::map<std::string, Channel>::iterator it_chan = serverDetails.makala.find(channel);
 
     if (it_chan == serverDetails.makala.end())
-        return (write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23), false); // return ?
+        return (send_err_msg(serverDetails, client_fd, 403, ":No such channel", NOT_INITIALIZED), false); // return ?
     if (it_chan->second.is_fd_op(client_fd) == false)
-        return (write(client_fd, "482 ERR_CHANOPRIVSNEEDED\n", 26), false);
-    std::map<int,Client>::iterator it_client = huntrill.find(client_fd);
+        return (send_err_msg(serverDetails, client_fd, 482, ":You're not channel operator", NOT_INITIALIZED), false);
+    std::map<int,Client>::iterator it_client = serverDetails.huntrill.find(client_fd);
     modes = " +";
     if (it_chan->second.getTopicStatus() == true)
         modes += "t";
@@ -46,9 +46,9 @@ bool get_channel_mode(Server &serverDetails, std::map<int, Client> &huntrill, in
     return (true);
 }
 
-bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails)
+bool mode(int client_fd, std::string line, Server &serverDetails)
 {
-    if (is_already_registered(huntrill, client_fd) == false)
+    if (is_already_registered(serverDetails, client_fd) == false)
         return (false);
 
     std::stringstream ss(line);
@@ -57,17 +57,17 @@ bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
     if (!(ss>>cmd>>channel>>modes))
     {
         if (channel.empty())
-            return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false);
-        return (get_channel_mode(serverDetails, huntrill, client_fd, channel));
+            return (send_err_msg(serverDetails, client_fd, 461, ":Not enough parameters", NOT_INITIALIZED), false);
+        return (get_channel_mode(serverDetails, client_fd, channel));
     }
     std::map<std::string, Channel>::iterator it = serverDetails.makala.find(channel);
     if (it == serverDetails.makala.end())
-        return (write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23), false);
+        return (send_err_msg(serverDetails, client_fd, 403, ":No such channel", NOT_INITIALIZED), false);
     if (it->second.is_fd_op(client_fd) == false)
-        return (write(client_fd, "482 ERR_CHANOPRIVSNEEDED\n", 26), false);
+        return (send_err_msg(serverDetails, client_fd, 482, ":You're not channel operator", NOT_INITIALIZED), false);
     std::getline(ss, args);
     if (it->second.is_fd_in_channel(client_fd) == false)
-        return (write(client_fd, "442 ERR_NOTONCHANNEL\n", 22), false);
+        return (send_err_msg(serverDetails, client_fd, 442, ":You're not on that channel", NOT_INITIALIZED), false);
     int add = -1;
     int nb_args = 0;
     for (int i = 0; modes[i]; i++)
@@ -91,7 +91,7 @@ bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
         {
             arg_parsed>>arg;
             if (arg.empty() && add == true)
-                return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false);
+                return (send_err_msg(serverDetails, client_fd, 461, ":Not enough parameters", NOT_INITIALIZED), false);
             // std::cout << "MODE PASSWORD = |" << arg << "|" << std::endl;
             it->second.setMode('k', add, arg.c_str());
         }
@@ -99,9 +99,9 @@ bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
         {
             arg_parsed>>arg;
             if (arg.empty())
-                return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false);
-            std::map<int, Client>::iterator it_hunt = huntrill.begin();
-            for (; it_hunt != huntrill.end(); it_hunt++)
+                return (send_err_msg(serverDetails, client_fd, 461, ":Not enough parameters", NOT_INITIALIZED), false);
+            std::map<int, Client>::iterator it_hunt = serverDetails.huntrill.begin();
+            for (; it_hunt != serverDetails.huntrill.end(); it_hunt++)
             {
                 if (it->second.is_fd_in_channel(it_hunt->first) == true && strcmp(it_hunt->second.getNick().c_str(), arg.c_str()) == 0)
                 {
@@ -121,16 +121,16 @@ bool mode(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
                     }
                 }
             }
-            if (it_hunt == huntrill.end())
-                return (write(client_fd, "441 ERR_USERNOTINCHANNEL\n", 26), false);
+            if (it_hunt == serverDetails.huntrill.end())
+                return (send_err_msg(serverDetails, client_fd, 441, ":They aren't on that channel", arg), false);
         }
         if (modes[i] == 'l') // l MAXCLIENTLIMIT
         {
             arg_parsed>>arg;
             if (arg.empty() && add == true)
-                return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false);
+                return (send_err_msg(serverDetails, client_fd, 461, ":Not enough parameters", NOT_INITIALIZED), false);
             it->second.setMode('l', add, arg.c_str());
         }
     }
-    return (send_cmd_broadcast(serverDetails, huntrill, "MODE", modes + arg_parsed.str(), client_fd, it->first), true);
+    return (send_cmd_broadcast(serverDetails, "MODE", modes + arg_parsed.str(), client_fd, it->first), true);
 }

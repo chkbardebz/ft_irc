@@ -34,18 +34,23 @@ bool send_quit_to_peers(Server &serverDetails, int client_fd, std::string msg)
     return (true);
 }
 
-bool quit(std::map<int, Client> &huntrill, int client_fd, char *line, Server &serverDetails)
+bool quit(int client_fd, std::string line, Server &serverDetails)
 {
-    std::map<int,Client>::iterator it_hunt = huntrill.find(client_fd);
-    if (it_hunt == huntrill.end())
+    std::string msg;
+    std::map<int,Client>::iterator it_hunt = serverDetails.huntrill.find(client_fd);
+    if (it_hunt == serverDetails.huntrill.end())
         return (false);
-    std::string msg = ":" + it_hunt->second.getNick() + "!" + it_hunt->second.getUser() + "@localhost " + line + "\r\n";
 
+    std::string str(line);
+    if (!str.empty() && str[str.size()-1] == '\n' && str[str.size() - 2] == '\r')
+        msg = ":" + it_hunt->second.getNick() + "!" + it_hunt->second.getUser() + "@localhost " + str;
+    else
+        msg = ":" + it_hunt->second.getNick() + "!" + it_hunt->second.getUser() + "@localhost " + str + "\r\n";
     // (void)line;
     send_quit_to_peers(serverDetails, client_fd, msg);
     it_hunt->second.resetClient();
 
-    huntrill.erase(it_hunt);
+    serverDetails.huntrill.erase(it_hunt);
 
     return (true);
 }

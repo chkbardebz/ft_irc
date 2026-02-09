@@ -7,9 +7,9 @@
 //? => user pas dans le canal => 441 ERR_USERNOTINCHANNEL
 //? => le kicker n'est pas dans le bon canal => 442 ERR_NOTONCHANNEL
 
-bool kick(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails)
+bool kick(int client_fd, std::string line, Server &serverDetails)
 {
-    if (is_already_registered(huntrill, client_fd) == false)
+    if (is_already_registered(serverDetails, client_fd) == false)
         return (false);
 
     std::stringstream ss(line);
@@ -17,7 +17,7 @@ bool kick(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
     bool message_printable = false;
 
     if (!(ss >> cmd >> channel_unsplited >> user_unsplited))
-        return (write(client_fd, "461 ERR_NEEDMOREPARAMS\n", 24), false);
+        return (send_err_msg(serverDetails, client_fd, 461, ":Not enough parameters", NOT_INITIALIZED), false);
     std::vector<std::string> channel_splited = ft_sukuna(channel_unsplited, ',');
     std::vector<std::string> user_splited = ft_sukuna(user_unsplited, ',');
     if (ss >> message)
@@ -35,50 +35,50 @@ bool kick(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
     {
         if (it_channel_splited->empty() || (*it_channel_splited)[0] != '#')
         {
-            write(client_fd, "476 ERR_BADCHANMASK\n", 21); //! pas dans rfc2812 askip dooonc nosuchchannel a la place ??
+            send_err_msg(serverDetails, client_fd, 476, ":Bad Channel Mask", NOT_INITIALIZED); //! pas dans rfc2812 askip
             continue ;
         }
         std::map<std::string,Channel>::iterator channel_details = serverDetails.makala.find(*it_channel_splited);
         // VERIFIE SI LE CHANNEL EXISTE
         if (channel_details == serverDetails.makala.end())
         {
-            write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23);
+            send_err_msg(serverDetails, client_fd, 403, ":No such channel", NOT_INITIALIZED);
             continue ;
         }
         // VERIFIE SI LE KICKEUR EST PRESENT SUR LE CHANNEL
         if(channel_details->second.is_fd_in_channel(client_fd) == false)
         {
-            write(client_fd, "442 ERR_NOTONCHANNEL\n", 22);
+            send_err_msg(serverDetails, client_fd, 442, ":You're not on that channel", NOT_INITIALIZED);
             continue ;
         }
         // VERIFIE SI LE KICKEUR EST OP
         if (channel_details->second.is_fd_op(client_fd) == false)
         {
-            write(client_fd, "482 ERR_CHANOPRIVSNEEDED\n", 26);
+            send_err_msg(serverDetails, client_fd, 482, ":You're not channel operator", NOT_INITIALIZED);
             continue ;
         }
         // VERIFIE SI LE NICK DE LA VICTIME EXISTE 
-        int fd_kicked = nick_to_fd(huntrill, *it_user_splited);
+        int fd_kicked = nick_to_fd(serverDetails, *it_user_splited);
         if(fd_kicked < 0)
         {
-            write(client_fd, "401 ERR_NOSUCHNICK\n", 20);
+            send_err_msg(serverDetails, client_fd, 401, ":No such nick/channel", NOT_INITIALIZED);
             continue ;
         }
         // VERIFIE SI LA VICTIME EST PRESENT SUR LE CHANNEL
         if(channel_details->second.is_fd_in_channel(fd_kicked) == false)
         {
-            write(client_fd, "441 ERR_USERNOTINCHANNEL\n", 26);
+            send_err_msg(serverDetails, client_fd, 441, ":They aren't on that channel", NOT_INITIALIZED); //! normalement precise le nick mais glr a repecher
             continue ;
         }
         // VERIFIE S'IL Y A UN MSG A ENVOYER (FALCULTATIF)
-        if (send_msg_to_channel(serverDetails, huntrill, cmd, *it_user_splited + " " + message, client_fd, *it_channel_splited) == false)
+        if (send_msg_to_channel(serverDetails, cmd, *it_user_splited + " " + message, client_fd, *it_channel_splited) == false)
         {
-            write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23);
+            send_err_msg(serverDetails, client_fd, 403, ":No such channel", NOT_INITIALIZED);
             continue ;
         }
         // ENVOI LE BON MESSAGE SI AUTO KICK
         if (fd_kicked == client_fd)
-            send_msg_to_client(huntrill, client_fd, client_fd, cmd, message);
+            send_msg_to_client(serverDetails, client_fd, client_fd, cmd, message);
         // FAIRE QUITTER LE CLIENT DU CHANNEL
         channel_details->second.client_quit_channel(fd_kicked);
         // FERME LE CHANNEL SI PLUS AUCUN CLIENT DESSUS

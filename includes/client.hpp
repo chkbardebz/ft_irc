@@ -15,7 +15,8 @@ class Client
         bool _status_user;
         bool _status_pass;
         // std::string _éphropathieshéréditaires; 
-    public :   
+    public :
+        std::string recvBuffer; 
     // == CANON ================================================================================================
         Client();
         Client(const Client &src);
@@ -26,7 +27,7 @@ class Client
         void setNick(std::string nickname);
         void setReal(std::string realname);
 
-        void setStatusNIck(bool new_status); //! I majuscule
+        void setStatusNick(bool new_status); //! I majuscule
         void setStatusUser(bool new_status);
         void setStatusPass(bool new_status);
 
@@ -40,8 +41,8 @@ class Client
         bool getStatusPass();
 
     // == CLEANUP ================================================================================================
-
         void resetClient();
+
 };
 
 #endif

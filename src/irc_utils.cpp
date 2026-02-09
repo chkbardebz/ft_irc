@@ -30,29 +30,14 @@ bool is_full_of_space(std::string str, size_t i)
     return (true);
 }
 
-void ft_putstr_fd(const char *str, int fd)
+void welcome_client(Server &serverDetails, int client_fd)
 {
-    for (int i = 0; str[i]; i++)
-        write(fd , &str[i], 1);
-}
-
-bool is_client_set(std::map<int, Client> &huntrill, int client_fd)
-{
-    std::map<int, Client>::iterator it = huntrill.find(client_fd);
-
-    if (it->second.getStatusNick() == true && it->second.getStatusPass() == true && it->second.getStatusUser() == true)
-        return (true);
-    return (false);
-}
-
-void welcome_client(std::map<int, Client> &huntrill, int client_fd)
-{
-    std::map<int, Client>::iterator it = huntrill.find(client_fd);
+    std::map<int, Client>::iterator it = serverDetails.huntrill.find(client_fd);
 
     if (it->second.getStatusNick() == true && it->second.getStatusPass() == true && it->second.getStatusUser() == true)
     {
-        std::string ret_message = "001 "+ it->second.getNick() + " :Welcome to the IRC Network\n";
-        ft_putstr_fd(ret_message.c_str(), it->first);
+        std::string ret_message = "001 "+ it->second.getNick() + " :Welcome to the IRC Network\r\n";
+        send(it->first, ret_message.c_str(), ret_message.size(), 0);
     }
 }
 
@@ -67,68 +52,70 @@ void welcome_client(std::map<int, Client> &huntrill, int client_fd)
 // ===============================================================================================================
 
 // :<server> <numeric> <target> [<params>] :<message>
-void send_err_msg(std::map<int, Client> &huntrill, int client_fd, int type_err, std::string reason, std::string message)
+void send_err_msg(Server &serverDetails, int client_fd, int type_err, std::string message, std::string reason)
 {
     std::string msg;
     std::ostringstream oss;
     oss << type_err;
     std::string type_err_s = oss.str();
-    std::map<int, Client>::iterator it = huntrill.find(client_fd);
+    std::map<int, Client>::iterator it = serverDetails.huntrill.find(client_fd);
     if (reason == NOT_INITIALIZED)
-        msg = ":ircserv.local " + type_err_s + ' ' + it->second.getNick() + ' ' + message + '\n';
+        msg = ":ircserv.local " + type_err_s + ' ' + it->second.getNick() + ' ' + message + "\r\n";
     else
-        msg = ":ircserv.local " + type_err_s + ' ' + it->second.getNick() + ' ' + reason + ' ' + message + '\n';
+        msg = ":ircserv.local " + type_err_s + ' ' + it->second.getNick() + ' ' + reason + ' ' + message + "\r\n";
     send(client_fd, msg.c_str(), msg.size(), 0);
 }
 
-bool send_msg_to_channel(Server &serverDetails, std::map<int, Client> &huntrill, std::string cmd, std::string message, int sender_fd, std::string channel)
+bool send_msg_to_channel(Server &serverDetails, std::string cmd, std::string message, int sender_fd, std::string channel)
 {
     std::map<std::string, Channel>::iterator it = serverDetails.makala.find(channel);
     std::set<int>::iterator receiver_fd = it->second.getFds().begin();
-    std::map<int, Client>::iterator it_sender = huntrill.find(sender_fd);
+    std::map<int, Client>::iterator it_sender = serverDetails.huntrill.find(sender_fd);
     //! secu find ?
 
+    if (it == serverDetails.makala.end())
+        return (send_err_msg(serverDetails, sender_fd, 403, ":No such channel", channel), false);
     if (it->second.is_fd_in_channel(sender_fd) == false)
-        return (write(sender_fd, "442 ERR_NOTONCHANNEL\n", 22), false);
+        return (send_err_msg(serverDetails, sender_fd, 442, ":You're not on that channel", NOT_INITIALIZED), false);
     for (; receiver_fd != it->second.getFds().end(); receiver_fd++)
     {
         if (*receiver_fd == sender_fd)
             continue;
-        std::string msg = ":" + it_sender->second.getNick() + "!" + it_sender->second.getUser() + "@localhost " + cmd + " " + channel + " " + message + '\n';
+        std::string msg = ":" + it_sender->second.getNick() + "!" + it_sender->second.getUser() + "@localhost " + cmd + " " + channel + " " + message + "\r\n";
         send(*receiver_fd, msg.c_str(), msg.size(), 0);
     }
     return (true);
 }
 
-bool send_msg_to_client(std::map<int, Client> &huntrill, int sender_fd, int receiver_fd, std::string cmd, std::string message)
+bool send_msg_to_client(Server &serverDetails, int sender_fd, int receiver_fd, std::string cmd, std::string message)
 {
-    std::map<int, Client>::iterator it_sender = huntrill.find(sender_fd);
-    std::map<int, Client>::iterator it_receiver = huntrill.find(receiver_fd);
+    std::map<int, Client>::iterator it_sender = serverDetails.huntrill.find(sender_fd);
+    std::map<int, Client>::iterator it_receiver = serverDetails.huntrill.find(receiver_fd);
     //! secu find ?
 
-    std::string msg = ":" + it_sender->second.getNick() + "!" + it_sender->second.getUser() + "@localhost " + cmd + " " + it_receiver->second.getNick() + " " + message + '\n';
+    std::string msg = ":" + it_sender->second.getNick() + "!" + it_sender->second.getUser() + "@localhost " + cmd + " " + it_receiver->second.getNick() + " " + message + "\r\n";
     send(receiver_fd, msg.c_str(), msg.size(), 0);
     return (true);
 }
 
-bool send_cmd_broadcast(Server &serverDetails, std::map<int, Client> &huntrill, std::string cmd, std::string message, int sender_fd, std::string channel)
+bool send_cmd_broadcast(Server &serverDetails, std::string cmd, std::string message, int sender_fd, std::string channel)
 {
     std::map<std::string, Channel>::iterator it = serverDetails.makala.find(channel);
     std::set<int>::iterator receiver_fd = it->second.getFds().begin();
-    std::map<int, Client>::iterator it_sender = huntrill.find(sender_fd);
+    std::map<int, Client>::iterator it_sender = serverDetails.huntrill.find(sender_fd);
 
     for (; receiver_fd != it->second.getFds().end(); receiver_fd++)
     {
-        std::string msg = ":" + it_sender->second.getNick() + "!" + it_sender->second.getUser() + "@localhost " + cmd + " " + channel + " " + message + '\n';
+        std::string msg = ":" + it_sender->second.getNick() + "!" + it_sender->second.getUser() + "@localhost " + cmd + " " + channel + " " + message + "\r\n";
         send(*receiver_fd, msg.c_str(), msg.size(), 0);
     }
     return (true);
 }
 
-int nick_to_fd(std::map<int, Client> &huntrill, std::string nick)
+int nick_to_fd(Server &serverDetails, std::string nick)
 {
-    std::map<int, Client>::iterator it = huntrill.begin();
-    for (; it != huntrill.end(); it++)
+    std::map<int, Client>::iterator it = serverDetails.huntrill.begin();
+    for (; it != serverDetails.huntrill.end(); it++)
     {
         if (it->second.getNick() == nick)
             return (it->first);
@@ -160,10 +147,10 @@ void clear_vector_sukuned(std::vector<std::string> &channels_splited)
 
 // =====================================
 
-bool is_already_registered(std::map<int, Client> &huntrill, int client_fd)
+bool is_already_registered(Server &serverDetails, int client_fd)
 {
     std::string msg;
-    std::map<int, Client>::iterator it = huntrill.find(client_fd);
+    std::map<int, Client>::iterator it = serverDetails.huntrill.find(client_fd);
 
     if (it->second.getStatusNick() == true && it->second.getStatusPass() == true && it->second.getStatusUser() == true)
         return(true);
@@ -174,3 +161,28 @@ bool is_already_registered(std::map<int, Client> &huntrill, int client_fd)
     send(client_fd, msg.c_str(), msg.size(), 0);
     return(false);
 }
+
+
+// send_err_msg(huntrill, client_fd, 461, ":Not enough parameters", NOT_INITIALIZED)
+// send_err_msg(huntrill, client_fd, 403, ":No such channel", NOT_INITIALIZED)
+// send_err_msg(huntrill, client_fd, 401, ":No such nick/channel", NOT_INITIALIZED)
+// send_err_msg(huntrill, client_fd, 428, ":You're not channel operator", NOT_INITIALIZED)
+// send_err_msg(huntrill, client_fd, 442, ":You're not on that channel", NOT_INITIALIZED)
+// send_err_msg(huntrill, client_fd, 443, ":Is already on channel", NOT_INITIALIZED)
+
+// send_err_msg(huntrill, client_fd, 476, ":Bad Channel Mask", )
+// send_err_msg(huntrill, client_fd, 471, ":Cannot join channel (+l)", )
+// send_err_msg(huntrill, client_fd, 473, ":Cannot join channel (+i)", )
+// send_err_msg(huntrill, client_fd, 482, ":You're not channel operator", NOT_INITIALIZED)
+
+
+// send_err_msg(huntrill, client_fd, 441, ":They aren't on that channel", )
+
+
+// send_err_msg(huntrill, client_fd, 431, ":No nickname given", NOT_INITIALIZED)
+// send_err_msg(huntrill, client_fd, 432, ":Erroneous nickname", )
+// send_err_msg(huntrill, client_fd, 433, ":Nickname is already in use", nickname)
+
+
+// send_err_msg(huntrill, client_fd, 462, ":You may not reregister", NOT_INITIALIZED)
+// send_err_msg(huntrill, client_fd, 464, ":Password incorrect", NOT_INITIALIZED)

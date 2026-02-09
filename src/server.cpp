@@ -42,6 +42,11 @@ struct addrinfo** Server::getResAddr()
     return (&this->_res);
 }
 
+struct pollfd *Server::getFds()
+{
+    return (this->_fds);
+}
+
 // == SETTERS =========================================================================================================
 
 void Server::setPass(std::string password)
@@ -57,4 +62,9 @@ void Server::setHints(const struct addrinfo& hints)
 void Server::setRes(struct addrinfo *res)
 {
     this->_res = res;
+}
+
+void Server::setFds(struct pollfd *fds)
+{
+    this->_fds = fds;
 }

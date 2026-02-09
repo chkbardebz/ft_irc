@@ -3,12 +3,12 @@
 // == CONSTRUCTORS =========================================================================================================
 
 //? UTILE std::map<int, Client> 
-Client::Client() : _nickname(NOT_INITIALIZED), _username(NOT_INITIALIZED), _realname(NOT_INITIALIZED), _status_nick(false), _status_user(false), _status_pass(false)
+Client::Client() : _nickname(NOT_INITIALIZED), _username(NOT_INITIALIZED), _realname(NOT_INITIALIZED), _status_nick(false), _status_user(false), _status_pass(false), recvBuffer(NOT_INITIALIZED)
 {
 }
 
 //? UTILE std::map
-Client::Client(const Client &src) : _nickname(src._nickname), _username(src._username), _realname(src._realname), _status_nick(src._status_nick), _status_user(src._status_user), _status_pass(src._status_pass)
+Client::Client(const Client &src) : _nickname(src._nickname), _username(src._username), _realname(src._realname), _status_nick(src._status_nick), _status_user(src._status_user), _status_pass(src._status_pass), recvBuffer(NOT_INITIALIZED)
 {
 }
 
@@ -85,7 +85,7 @@ void Client::setStatusUser(bool new_status)
 {
     _status_user = new_status;
 }
-void Client::setStatusNIck(bool new_status)
+void Client::setStatusNick(bool new_status)
 {
     _status_nick = new_status;
 }
@@ -101,7 +101,7 @@ void Client::resetClient()
     setNick(NOT_INITIALIZED);
     setReal(NOT_INITIALIZED);
 
-    setStatusNIck(false);
+    setStatusNick(false);
     setStatusUser(false);
     setStatusPass(false);
 }

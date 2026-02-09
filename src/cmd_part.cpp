@@ -6,9 +6,9 @@
 //? PART #<channel(s)> <message> ==> quitte les channels en laissant un msg.
 //? PART #general #random #help ==> INCORRECT
 //? PART #general,#random,#help ==> VALID
-bool part(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails)
+bool part(int client_fd, std::string line, Server &serverDetails)
 {
-    if (is_already_registered(huntrill, client_fd) == false)
+    if (is_already_registered(serverDetails, client_fd) == false)
         return (false);
 
     std::stringstream ss(line);
@@ -17,7 +17,7 @@ bool part(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
 
     // PART est forcement la car parsing mais channel a echoue donc il est absent ==> err
     if (!(ss >> cmd >> channel_s_unsplited))
-        return (write(client_fd, "461 RR_NEEDMOREPARAMS\n", 23), false);
+        return (send_err_msg(serverDetails, client_fd, 461, ":Not enough parameters", NOT_INITIALIZED), false);
     std::vector<std::string> channels_splited = ft_sukuna(channel_s_unsplited, ',');
     if (ss >> message)
         message_printable = true;
@@ -34,28 +34,24 @@ bool part(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
     {
         if (channels_splited_it->empty() || (*channels_splited_it)[0] != '#')
         {
-            write(client_fd, "476 ERR_BADCHANMASK\n", 21);
+            send_err_msg(serverDetails, client_fd, 476, ":Bad Channel Mask", NOT_INITIALIZED);
             continue ;
         }
         std::map<std::string,Channel>::iterator channel_details = serverDetails.makala.find(*channels_splited_it);
         // VERIFIE SI LE CHANNEL EXISTE
         if (channel_details == serverDetails.makala.end())
         {
-            write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23);
+            send_err_msg(serverDetails, client_fd, 403, ":No such channel", *channels_splited_it);
             continue ;
         }
         // VERIFIE SI LE CLIENT EST PRESENT SUR LE CHANNEL
         if(channel_details->second.is_fd_in_channel(client_fd) == false)
         {
-            write(client_fd, "442 ERR_NOTONCHANNEL\n", 22);
+            send_err_msg(serverDetails, client_fd, 442, ":You're not on that channel", NOT_INITIALIZED);
             continue ;
         }
         // VERIFIE S'IL Y A UN MSG A ENVOYR (FALCULTATIF)
-        if (send_msg_to_channel(serverDetails, huntrill, "PART", message, client_fd, *channels_splited_it) == false)
-        {
-            write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23); //!
-            continue ;
-        } 
+        send_msg_to_channel(serverDetails, "PART", message, client_fd, *channels_splited_it); //! a re tester
         // FAIRE QUITTER LE CLIENT DU SERVER
         channel_details->second.client_quit_channel(client_fd);
         // FERME LE CHANNEL SI PLUS AUCUN CLIENT DESSUS
@@ -64,92 +60,3 @@ bool part(std::map<int, Client> &huntrill, int client_fd, char* line, Server &se
     }
     return (clear_vector_sukuned(channels_splited), true);
 }
-
-
-
-//! rajouter ces erreur gere ici 
-
-// bool send_msg_to_channel(Server &serverDetails, std::map<int, Client> &huntrill, int client_fd, std::string channel, std::string message)
-// {
-//     std::map<std::string, Channel>::iterator it_channel = serverDetails.makala.begin();
-//     for (; it_channel != serverDetails.makala.end() ; it_channel++)
-//     {
-//         if (strcmp(it_channel->first.c_str(), channel.c_str()) == 0)
-//         {
-//             if (it_channel->second.is_fd_in_channel(client_fd) == false)
-//                 return (write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23), false); //? client hors du chann
-//             it_channel->second.send_msg_to_channel(message, huntrill, client_fd);
-//             return (true);
-//         }
-//     }
-//     return (write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23), false);
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//! BEFORE CHANGEMENT DE LOGIQUE AVEC LE ':'
-//! ':' n'indique pas le debut du reason/message MAIS precise uniquement si il y a des espaces dans celui-ci
-// bool part(std::map<int, Client> &huntrill, int client_fd, char* line, Server &serverDetails)
-// {
-//     std::stringstream ss(line);
-//     std::string cmd, channel_s_unsplited, message;
-//     bool message_printable = false;
-
-//     if (!(ss >> cmd >> channel_s_unsplited)) // PART est forcement la car parsing mais channel a echoue donc il est absent ==> err
-//         return (write(client_fd, "461 RR_NEEDMOREPARAMS\n", 23), false);
-
-//     std::vector<std::string> channels_splited = split_channel_s(channel_s_unsplited, ',');
-//     std::getline(ss, message);
-//     while (message[0] && isspace(message[0]))
-//         message.erase(0, 1);
-//     if (message[0] == ':' && fullisspace2(message, 1) == false) //!
-//         message_printable = true;
-//     for (std::vector<std::string>::iterator channels_splited_it = channels_splited.begin();
-//      channels_splited_it != channels_splited.end(); ++channels_splited_it) 
-//     {
-//         if (channels_splited_it->empty() || (*channels_splited_it)[0] != '#')
-//         {
-//             write(client_fd, "476 ERR_BADCHANMASK\n", 21);
-//             continue ;
-//         }
-        
-//         std::map<std::string,Channel>::iterator channel_details = serverDetails.makala.find(*channels_splited_it);
-//         std::cout << "verifChannelSplited=" << *channels_splited_it << std::endl;
-
-//         // VERIFIE SI LE CHANNEL EXISTE
-//         if (channel_details == serverDetails.makala.end())
-//         {
-//             write(client_fd, "403 ERR_NOSUCHCHANNEL\n", 23);
-//             continue ;
-//         }
-//         // VERIFIE SI LE CLIENT EST PRESENT SUR LE CHANNEL
-//         if(channel_details->second.is_fd_in_channel(client_fd) == false)
-//         {
-//             write(client_fd, "442 ERR_NOTONCHANNEL\n", 22);
-//             continue ;
-//         }
-//         // VERIFIE S'IL Y A UN MSG A ENVOYR (FALCULTATIF)
-//         if (message_printable == true)
-//         {
-//             if (send_msg_to_channel(serverDetails, huntrill, client_fd, *channels_splited_it, message) == false) //renvoi deja un msg d'err s'il faut
-//                 continue ;
-//         }
-//         // FAIRE QUITTER LE CLIENT DU SERVER
-//         channel_details->second.client_quit_channel(client_fd);
-//         // FERME LE CHANNEL SI PLUS AUCUN CLIENT DESSUS
-//         if (channel_details->second.is_there_clients() == 0)
-//             serverDetails.makala.erase(channel_details);
-//     }
-//     return (clear_channels_splited(channels_splited), true);
-// }
