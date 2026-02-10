@@ -33,8 +33,11 @@ bool topic(int client_fd, std::string line, Server &serverDetails)
     if (first == ":" && (rest.empty() || is_full_of_space(rest, 0) == true))
     {
         it->second.setTopic(NO_TOPIC);
+        send_cmd_broadcast(serverDetails, "TOPIC", NO_TOPIC, client_fd, it->first);
         return (true);
     }
+    else if (first[0] != ':' && (!rest.empty() || is_full_of_space(rest, 0) == false))
+        rest = "";
     it->second.setTopic(first + rest);
     send_cmd_broadcast(serverDetails, "TOPIC", first + rest, client_fd, it->first);
     // send_msg_to_channel(serverDetails, "TOPIC", first + rest, client_fd, it->first);

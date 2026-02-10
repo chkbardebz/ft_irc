@@ -22,6 +22,7 @@ bool part(int client_fd, std::string line, Server &serverDetails)
     if (ss >> message)
         message_printable = true;
     // SI COMMENCE PAR ':' CELA INDIQUE QUE LE MESSAGE CONTIENT DES ESPACES DONC ON PRENDS TOUT AVEC GETLINE
+
     // SI NE COMMENCE PAS PAR ':' LE DERNIER ELEMENT RECRACHE PAR SS DEVIENT LE REASON/MESSAGE MM SI CE N'EST PAS LE CAS (pour etre en accord avec RFC2812)
     if (message_printable == true && message[0] == ':')
     {
