@@ -1,4 +1,4 @@
-#include "../includes/server.hpp" 
+#include "../../includes/server.hpp" 
 
 // ERR POSSIBLE :
 //? => pas op pour kick => 482 ERR_CHANOPRIVSNEEDED ==> client_fd recoit => ":server 482 <nick> #chan :You're not channel operator"
@@ -35,7 +35,7 @@ bool kick(int client_fd, std::string line, Server &serverDetails)
     {
         if (it_channel_splited->empty() || (*it_channel_splited)[0] != '#')
         {
-            send_err_msg(serverDetails, client_fd, 476, ":Bad Channel Mask", NOT_INITIALIZED); //! pas dans rfc2812 askip
+            send_err_msg(serverDetails, client_fd, 476, ":Bad Channel Mask", NOT_INITIALIZED); // pas dans rfc2812 askip
             continue ;
         }
         std::map<std::string,Channel>::iterator channel_details = serverDetails.makala.find(*it_channel_splited);
@@ -67,7 +67,7 @@ bool kick(int client_fd, std::string line, Server &serverDetails)
         // VERIFIE SI LA VICTIME EST PRESENT SUR LE CHANNEL
         if(channel_details->second.is_fd_in_channel(fd_kicked) == false)
         {
-            send_err_msg(serverDetails, client_fd, 441, ":They aren't on that channel", NOT_INITIALIZED); //! normalement precise le nick mais glr a repecher
+            send_err_msg(serverDetails, client_fd, 441, ":They aren't on that channel", NOT_INITIALIZED); //
             continue ;
         }
         // VERIFIE S'IL Y A UN MSG A ENVOYER (FALCULTATIF)

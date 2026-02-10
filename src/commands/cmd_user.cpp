@@ -1,4 +1,4 @@
-#include "../includes/server.hpp"
+#include "../../includes/server.hpp"
 
 bool user(int client_fd, std::string line, Server &serverDetails)
 {
@@ -9,7 +9,7 @@ bool user(int client_fd, std::string line, Server &serverDetails)
     std::string cmd, username, hostname, servname, realname;
     if (!(ss >> cmd >> username >> hostname >> servname))
         return (send_err_msg(serverDetails, client_fd, 461, ":Not enough parameters", NOT_INITIALIZED), false);
-    getline(ss, realname);
+    std::getline(ss, realname);
     while (realname[0] && isspace(realname[0]))
         realname.erase(0, 1);
     if (realname.empty() || realname[0] != ':' || is_full_of_space(realname, 1) == true)

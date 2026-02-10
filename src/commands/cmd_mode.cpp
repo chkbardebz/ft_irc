@@ -1,4 +1,4 @@
-#include "../includes/server.hpp"
+#include "../../includes/server.hpp"
 
 int count_words(const std::string& str)
 {
@@ -83,7 +83,7 @@ bool mode(int client_fd, std::string line, Server &serverDetails)
             add = true;
         if (modes[i] == '-')
             add = false;
-        if (modes[i] == 'i') // i INVITEMODEONLY //! A revoir lorsque INVITE sera implemente
+        if (modes[i] == 'i') // i INVITEMODEONLY 
             it->second.setMode('i', add, NULL);
         if (modes[i] == 't') // t TOPICRESTIRCTED
             it->second.setMode('t', add, NULL);

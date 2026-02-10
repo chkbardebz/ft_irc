@@ -71,7 +71,6 @@ bool send_msg_to_channel(Server &serverDetails, std::string cmd, std::string mes
     std::map<std::string, Channel>::iterator it = serverDetails.makala.find(channel);
     std::set<int>::iterator receiver_fd = it->second.getFds().begin();
     std::map<int, Client>::iterator it_sender = serverDetails.huntrill.find(sender_fd);
-    //! secu find ?
 
     if (it == serverDetails.makala.end())
         return (send_err_msg(serverDetails, sender_fd, 403, ":No such channel", channel), false);
@@ -91,7 +90,6 @@ bool send_msg_to_client(Server &serverDetails, int sender_fd, int receiver_fd, s
 {
     std::map<int, Client>::iterator it_sender = serverDetails.huntrill.find(sender_fd);
     std::map<int, Client>::iterator it_receiver = serverDetails.huntrill.find(receiver_fd);
-    //! secu find ?
 
     std::string msg = ":" + it_sender->second.getNick() + "!" + it_sender->second.getUser() + "@localhost " + cmd + " " + it_receiver->second.getNick() + " " + message + "\r\n";
     send(receiver_fd, msg.c_str(), msg.size(), 0);
@@ -103,7 +101,6 @@ bool send_cmd_broadcast(Server &serverDetails, std::string cmd, std::string mess
     std::map<std::string, Channel>::iterator it = serverDetails.makala.find(channel);
     std::set<int>::iterator receiver_fd = it->second.getFds().begin();
     std::map<int, Client>::iterator it_sender = serverDetails.huntrill.find(sender_fd);
-
     for (; receiver_fd != it->second.getFds().end(); receiver_fd++)
     {
         std::string msg = ":" + it_sender->second.getNick() + "!" + it_sender->second.getUser() + "@localhost " + cmd + " " + channel + " " + message + "\r\n";
@@ -160,6 +157,25 @@ bool is_already_registered(Server &serverDetails, int client_fd)
         msg = ":ircserv.local 451 " + it->second.getNick() + " :You have not registered\n";
     send(client_fd, msg.c_str(), msg.size(), 0);
     return(false);
+}
+
+void setFds(struct pollfd *fds, int servfd)
+{
+    for (int i = 1; i <= MAX_CLIENTS; i++)
+    {
+        fds[i].fd = -1;
+        fds[i].events = 0;
+        fds[i].revents = 0;
+    }
+    fds[0].fd = servfd;
+    fds[0].events = POLLIN;
+}
+
+
+void secu_close(Server &serverDetails, int servfd)
+{
+    close(servfd);
+    freeaddrinfo(serverDetails.getRes());
 }
 
 

@@ -1,4 +1,4 @@
-#include "../includes/server.hpp"
+#include "../../includes/server.hpp"
 
 bool send_quit_to_peers(Server &serverDetails, int client_fd, std::string msg)
 {
@@ -40,7 +40,6 @@ bool quit(int client_fd, std::string line, Server &serverDetails)
     std::map<int,Client>::iterator it_hunt = serverDetails.huntrill.find(client_fd);
     if (it_hunt == serverDetails.huntrill.end())
         return (false);
-
     std::string str(line);
     if (!str.empty() && str[str.size()-1] == '\n' && str[str.size() - 2] == '\r')
         msg = ":" + it_hunt->second.getNick() + "!" + it_hunt->second.getUser() + "@localhost " + str;

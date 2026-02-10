@@ -44,8 +44,8 @@ public :
     void setOp(int client_fd);
 
     const std::string &getTopic();
-    bool getTopicStatus(); //! Surement a rename
-    bool getUserLimitStatus(); //! pareil
+    bool getTopicStatus();
+    bool getUserLimitStatus();
     int getUserLimit();
     bool getPasswordStatus();
     const std::string &getChanPassword();

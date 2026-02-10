@@ -1,4 +1,4 @@
-#include "../includes/server.hpp"
+#include "../../includes/server.hpp"
 
 bool privmsg(int client_fd, std::string line, Server &serverDetails)
 {
@@ -8,8 +8,8 @@ bool privmsg(int client_fd, std::string line, Server &serverDetails)
     std::stringstream ss(line);
     std::string cmd, dest, first, message;
 
-    ss >> cmd >> dest >> first; //! a mettre dans un if (!()) ??
-    std::getline(ss, message); //! verifie si echoue ?
+    ss >> cmd >> dest >> first;
+    std::getline(ss, message);
     if (dest[0] == ':')
         return (send_err_msg(serverDetails, client_fd, 411, ":No recipient given", NOT_INITIALIZED), false);
     if (first.empty() || (first[0] == ':' && first.size() == 1 && is_full_of_space(message, 0) == true))

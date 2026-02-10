@@ -1,4 +1,4 @@
-#include "../includes/server.hpp"
+#include "../../includes/server.hpp"
 
 bool nick_check_duplicate(Server &serverDetails, std::string nickname)
 {
@@ -10,14 +10,12 @@ bool nick_check_duplicate(Server &serverDetails, std::string nickname)
     return(true);
 }
 
-#include <stdio.h>
 // nick peut se renommer pas user
 bool nick(int client_fd, std::string line, Server &serverDetails)
 {
     std::stringstream ss(line);
     std::string cmd, nickname; //, more
     std::map<int, Client>::iterator it = serverDetails.huntrill.find(client_fd);
-    printf("getstatusNICK======%d\n", it->second.getStatusNick());
     ss >> cmd >> nickname; // >> more
     if (nickname.empty()) //? err: pas de nickname fourni
         return (send_err_msg(serverDetails, client_fd, 431, ":No nickname given", NOT_INITIALIZED), false);

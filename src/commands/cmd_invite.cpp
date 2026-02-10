@@ -1,4 +1,4 @@
-#include "../includes/server.hpp"
+#include "../../includes/server.hpp"
 
 bool invite(int client_fd, std::string line, Server &serverDetails)
 {
@@ -17,19 +17,18 @@ bool invite(int client_fd, std::string line, Server &serverDetails)
             break;
     }
     if (it_hunt == serverDetails.huntrill.end())
-        return (send_err_msg(serverDetails, client_fd, 401, ":No such nick/channel", NOT_INITIALIZED), false); //! selon RFC2812
+        return (send_err_msg(serverDetails, client_fd, 401, ":No such nick/channel", NOT_INITIALIZED), false); //selon RFC2812
     std::map<std::string, Channel>::iterator it_chan = serverDetails.makala.find(channel);
     if (it_chan != serverDetails.makala.end())
     {
         if (it_chan->second.getInviteOnlyStatus() == true && it_chan->second.is_fd_op(client_fd) == false)
-            return (send_err_msg(serverDetails, client_fd, 428, ":You're not channel operator", NOT_INITIALIZED), false); //482 ERR_CHANOPRIVSNEEDED //! a tester
+            return (send_err_msg(serverDetails, client_fd, 428, ":You're not channel operator", NOT_INITIALIZED), false);
         if (it_chan->second.is_fd_in_channel(client_fd) == false && it_chan != serverDetails.makala.end()) //? si le client qui appelle la cmd n'est pas dans le channel et que le channel existe
             return (send_err_msg(serverDetails, client_fd, 442, ":You're not on that channel", NOT_INITIALIZED), false);    
         if (it_chan->second.is_fd_in_channel(it_hunt->first) == true && it_chan != serverDetails.makala.end())
             return (send_err_msg(serverDetails, client_fd, 443, ":Is already on channel", NOT_INITIALIZED), false);   
-        it_chan->second.invite_fd(it_hunt->first); //! ret true
+        it_chan->second.invite_fd(it_hunt->first);
         send_msg_to_client(serverDetails, client_fd, it_hunt->first, "INVITE ", channel);
     }
-    //! else // fait rien lorsque le channel existe pas ?! mais ret true
     return (true);
 }

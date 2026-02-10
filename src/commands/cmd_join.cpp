@@ -1,4 +1,4 @@
-#include "../includes/server.hpp"
+#include "../../includes/server.hpp"
 
 void name_reply(Server &serverDetails, int client_fd, std::string channel)
 {
@@ -13,7 +13,7 @@ void name_reply(Server &serverDetails, int client_fd, std::string channel)
         topicString = ":ircserv.local 332 " + it_client->second.getNick() + " " + channel + " " + it_chan->second.getTopic() + "\n"; //? RPL_TOPIC
     send(client_fd, topicString.c_str(), topicString.size(), 0);
  
-    for (std::set<int>::iterator it_fd = it_chan->second.getFds().begin(); it_fd != it_chan->second.getFds().end(); it_fd++) //! HORRIBLE je sais fefe
+    for (std::set<int>::iterator it_fd = it_chan->second.getFds().begin(); it_fd != it_chan->second.getFds().end(); it_fd++)
     {
         it_client = serverDetails.huntrill.find(*it_fd);
         if (it_chan->second.is_fd_op(*it_fd) == true)

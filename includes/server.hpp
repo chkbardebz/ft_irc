@@ -11,6 +11,7 @@
 # include <poll.h>
 # include <stdlib.h>
 # include <signal.h>
+# include <cerrno>
 
 # include <map>
 # include "client.hpp"
@@ -19,7 +20,7 @@
 
 # include <sstream> //parsing
 # include <set>
-# include <vector> //! remplacer dans part par set ?
+# include <vector>
 
 #define NO_PASS "\0"
 #define MAX_CLIENTS 42
@@ -67,23 +68,21 @@ bool invite(int client_fd, std::string line, Server &serverDetails);
 bool kick(int client_fd, std::string line, Server &serverDetails);
 bool quit(int client_fd, std::string line, Server &serverDetails);
 
-// == irc_utils.cpp ==================================================================================================================================================
+// == utils.cpp ==================================================================================================================================================
 bool is_valid_port(char* str);
 bool is_valid_char( const std::string str, int i );
 bool is_full_of_space(std::string str, size_t i);
 void welcome_client(Server &serverDetails, int client_fd);
-std::vector<std::string> ft_sukuna(std::string channel_s, char delim); //! vaffanculo
-void clear_vector_sukuned(std::vector<std::string> &channels_splited); //! vaffanculo
-
+std::vector<std::string> ft_sukuna(std::string channel_s, char delim); //vaffanculo
+void clear_vector_sukuned(std::vector<std::string> &channels_splited); //vaffanculo
 void send_err_msg(Server &serverDetails, int client_fd, int type_err, std::string reason, std::string message);
-// void send_msg_to_client_with_fd(std::map<int, Client> &huntrill, std::string cmd, std::string message, int receiver_fd, int sender_fd);
-
 bool send_msg_to_channel(Server &serverClient, std::string cmd, std::string message, int sender_fd, std::string channel);
 bool send_msg_to_client(Server &serverDetails, int sender_fd, int receiver_fd, std::string cmd, std::string message);
 bool send_cmd_broadcast(Server &serverDetails, std::string cmd, std::string message, int sender_fd, std::string channel);
 int nick_to_fd(Server &serverDetails, std::string nick);
-
 void handle_sigint(int sig);
 bool is_already_registered(Server &serverDetails, int client_fd);
+void setFds(struct pollfd *fds, int servfd);
+void secu_close(Server &serverDetails, int servfd);
 
 #endif

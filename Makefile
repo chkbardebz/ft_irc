@@ -8,51 +8,46 @@ SRC_DIR     := src
 OBJ_DIR     := obj
 
 SRCS 		=	src/main.cpp \
-				src/server.cpp \
-				src/client.cpp \
-				src/channel.cpp \
-				src/cmd_pass.cpp \
-				src/cmd_nick.cpp \
-				src/cmd_user.cpp \
-				src/cmd_privmsg.cpp \
-				src/cmd_join.cpp \
-				src/cmd_topic.cpp \
-				src/cmd_part.cpp \
-				src/cmd_mode.cpp \
-				src/cmd_invite.cpp \
-				src/cmd_kick.cpp \
-				src/cmd_quit.cpp \
-				src/irc_utils.cpp \
-				src/signal.cpp
+				src/utils.cpp \
+				src/network/server.cpp \
+				src/network/client.cpp \
+				src/network/channel.cpp \
+				src/commands/cmd_pass.cpp \
+				src/commands/cmd_nick.cpp \
+				src/commands/cmd_user.cpp \
+				src/commands/cmd_privmsg.cpp \
+				src/commands/cmd_join.cpp \
+				src/commands/cmd_topic.cpp \
+				src/commands/cmd_part.cpp \
+				src/commands/cmd_mode.cpp \
+				src/commands/cmd_invite.cpp \
+				src/commands/cmd_kick.cpp \
+				src/commands/cmd_quit.cpp \
 
 OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-CYAN		= \033[36m
-RESET		= \033[0m
-UP			= \033[A #remonte le curseur d'une ligne dans le terminal
-CUT			= \033[K #efface la ligne courante
-
 $(NAME): $(OBJS)
-	@$(CPP) $(CPPFLAGS) $(OBJS) -o $(NAME) 
-	@printf "$(CYAN)Compiling [$(NAME)]$(RESET)"
-	@sleep 0.2 && printf "$(CYAN).$(RESET)" && sleep 0.2 && printf "$(CYAN).$(RESET)" && sleep 0.2 && printf "$(CYAN).$(RESET)\n"
-	@printf "$(UP)$(CUT)"
-	@printf "$(CYAN)Finished [$(NAME)]$(RESET)\n"
-	@printf "$(UP)$(CUT)"
+	$(CPP) $(CPPFLAGS) $(OBJS) -o $(NAME) 
+	@printf "\n ██╗██████╗  ██████╗███████╗███████╗██████╗ ██╗   ██╗\n\
+	 ██║██╔══██╗██╔════╝██╔════╝██╔════╝██╔══██╗██║   ██║\n\
+	 ██║██████╔╝██║     ███████╗█████╗  ██████╔╝██║   ██║\n\
+	 ██║██╔══██╗██║     ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝\n\
+	 ██║██║  ██║╚██████╗███████║███████╗██║  ██║ ╚████╔╝ \n\
+	 ╚═╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  \n"
+                                                    
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@$(DIR_DUP)
-	@$(CPP) $(CPPFLAGS) -c -o $@ $<
+	$(DIR_DUP)
+	$(CPP) $(CPPFLAGS) -c -o $@ $<
 
 all: $(NAME)
 
 clean:
-	@$(RM) $(OBJS)
-	@rm -rf $(OBJ_DIR)
-	@printf "$(CYAN)Cleanup done.$(RESET)\n"
+	$(RM) $(OBJS)
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
-	@$(RM) $(NAME)
+	$(RM) $(NAME)
 
 re: fclean all
 

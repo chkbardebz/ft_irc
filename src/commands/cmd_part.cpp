@@ -1,4 +1,4 @@
-#include "../includes/server.hpp"
+#include "../../includes/server.hpp"
 
 //? tous les chemins de channels doivent etre essayes mm si un (plus tot) renvoi un msg d'erreur.
 //? PART ==> err PARAMS.
@@ -51,7 +51,7 @@ bool part(int client_fd, std::string line, Server &serverDetails)
             continue ;
         }
         // VERIFIE S'IL Y A UN MSG A ENVOYR (FALCULTATIF)
-        send_msg_to_channel(serverDetails, "PART", message, client_fd, *channels_splited_it); //! a re tester
+        send_msg_to_channel(serverDetails, "PART", message, client_fd, *channels_splited_it);
         // FAIRE QUITTER LE CLIENT DU SERVER
         channel_details->second.client_quit_channel(client_fd);
         // FERME LE CHANNEL SI PLUS AUCUN CLIENT DESSUS

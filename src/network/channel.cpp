@@ -1,4 +1,4 @@
-#include "../includes/server.hpp"
+#include "../../includes/server.hpp"
 
 Channel::Channel(std::string name) : _name(name), _topic(":No topic is set"), _chan_password(":No password is set"), _max_user(0), _is_invite_only(false), _is_topic_restricted(false), _is_chan_password(false), _is_user_limit(false)
 {
