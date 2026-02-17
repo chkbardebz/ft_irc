@@ -45,7 +45,6 @@ bool quit(int client_fd, std::string line, Server &serverDetails)
         msg = ":" + it_hunt->second.getNick() + "!" + it_hunt->second.getUser() + "@localhost " + str;
     else
         msg = ":" + it_hunt->second.getNick() + "!" + it_hunt->second.getUser() + "@localhost " + str + "\r\n";
-    // (void)line;
     send_quit_to_peers(serverDetails, client_fd, msg);
     it_hunt->second.resetClient();
 

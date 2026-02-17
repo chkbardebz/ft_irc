@@ -35,7 +35,7 @@ bool kick(int client_fd, std::string line, Server &serverDetails)
     {
         if (it_channel_splited->empty() || (*it_channel_splited)[0] != '#')
         {
-            send_err_msg(serverDetails, client_fd, 476, ":Bad Channel Mask", NOT_INITIALIZED); // pas dans rfc2812 askip
+            send_err_msg(serverDetails, client_fd, 476, ":Bad Channel Mask", NOT_INITIALIZED); // pas dans rfc2812
             continue ;
         }
         std::map<std::string,Channel>::iterator channel_details = serverDetails.makala.find(*it_channel_splited);

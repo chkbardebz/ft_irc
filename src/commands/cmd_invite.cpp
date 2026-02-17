@@ -17,7 +17,7 @@ bool invite(int client_fd, std::string line, Server &serverDetails)
             break;
     }
     if (it_hunt == serverDetails.huntrill.end())
-        return (send_err_msg(serverDetails, client_fd, 401, ":No such nick/channel", NOT_INITIALIZED), false); //selon RFC2812
+        return (send_err_msg(serverDetails, client_fd, 401, ":No such nick/channel", NOT_INITIALIZED), false);
     std::map<std::string, Channel>::iterator it_chan = serverDetails.makala.find(channel);
     if (it_chan != serverDetails.makala.end())
     {

@@ -57,7 +57,7 @@ void Channel::setTopic(std::string str)
     _topic = str;
 }
 
-void Channel::setMode(char mode, bool add, const char *arg) // char * car peut etre NULL
+void Channel::setMode(char mode, bool add, const char *arg)
 {
     if (mode == 'i')
         _is_invite_only = add;

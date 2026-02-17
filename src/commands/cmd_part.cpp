@@ -15,7 +15,6 @@ bool part(int client_fd, std::string line, Server &serverDetails)
     std::string cmd, channel_s_unsplited, message = "";
     bool message_printable = false;
 
-    // PART est forcement la car parsing mais channel a echoue donc il est absent ==> err
     if (!(ss >> cmd >> channel_s_unsplited))
         return (send_err_msg(serverDetails, client_fd, 461, ":Not enough parameters", NOT_INITIALIZED), false);
     std::vector<std::string> channels_splited = ft_sukuna(channel_s_unsplited, ',');

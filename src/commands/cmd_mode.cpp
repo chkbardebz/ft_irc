@@ -92,7 +92,6 @@ bool mode(int client_fd, std::string line, Server &serverDetails)
             arg_parsed>>arg;
             if (arg.empty() && add == true)
                 return (send_err_msg(serverDetails, client_fd, 461, ":Not enough parameters", NOT_INITIALIZED), false);
-            // std::cout << "MODE PASSWORD = |" << arg << "|" << std::endl;
             it->second.setMode('k', add, arg.c_str());
         }
         if (modes[i] == 'o') // o OPERCLIENT

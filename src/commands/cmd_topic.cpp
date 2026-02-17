@@ -40,6 +40,5 @@ bool topic(int client_fd, std::string line, Server &serverDetails)
         rest = "";
     it->second.setTopic(first + rest);
     send_cmd_broadcast(serverDetails, "TOPIC", first + rest, client_fd, it->first);
-    // send_msg_to_channel(serverDetails, "TOPIC", first + rest, client_fd, it->first);
     return (true);
 }

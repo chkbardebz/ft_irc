@@ -7,8 +7,6 @@ bool pass(int client_fd, std::string line, Server &serverDetails)
 
     if (!(ss >> cmd >> password))
         return (send_err_msg(serverDetails, client_fd, 461, ":Not enough parameters", NOT_INITIALIZED), false);
-    // if (ss >> more)
-    //     return (write(client_fd, "461 ERR_NEEDLESSPARAMS\n", 24), false);
     if (strcmp(password.c_str(), serverDetails.getPass().c_str()) == 0)
     {
         std::map<int, Client>::iterator it = serverDetails.huntrill.find(client_fd);

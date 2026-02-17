@@ -47,16 +47,16 @@ INVITE <nickname> <channel> // Sends an invite message to the client (nickname).
     a client wants to join an invite-only channel
 
 PART <channel_name> [<part_message>] // Removes the client from the channel and sends a
-    message (optional) to all the clients that are in that channel, if the client that quits the
-    channel is the last client in it, thechannel is destroyed
+    message (optional) to all the clients that are in that channel, if the client that quits
+    the channel is the last client in it, thechannel is destroyed
 
 QUIT [<quit_message>] // Disconnects the client from the server and sends a message (optional)
     to all the clients that have at least one channel in common
 ```
 * Operator Commands
 ```
-KICK <channel> <user> [<message>] // Kick an user from a channel sending him optionnaly the reason
-    why he got kicked
+KICK <channel> <nickname> [<message>] // Kick an user from a channel sending him optionnaly the
+    reason why he got kicked
 
 MODE <channel> +/-<modes> [<parameters>]
     - i             : turns the invite-only mode on/off
